@@ -37,6 +37,8 @@ import { RedemptionChecklistPage } from "./components/guides/RedemptionChecklist
 import { GuidesIndexPage } from "./components/guides/GuidesIndexPage";
 import { AboutUsPage } from "./components/AboutUsPage";
 import { TermsAndConditionsPage } from "./components/TermsAndConditionsPage";
+import { InvestorCommandDeck } from "./components/InvestorCommandDeck";
+import { ToolkitDirectoryPage } from "./components/ToolkitDirectoryPage";
 
 // Code-split heavy components away from initial public visitor bundle
 const ArticleReader = lazy(() =>
@@ -246,6 +248,7 @@ function YieldNestApp() {
   const [activeGuidePage, setActiveGuidePage] = useState<GuidePageViewType>("index");
   const [selectedHub, setSelectedHub] = useState<TopicHubData | null>(null);
   const [isHubsIndexView, setIsHubsIndexView] = useState(false);
+  const [isToolkitView, setIsToolkitView] = useState(false);
   const [activeStaticPage, setActiveStaticPage] = useState<"about" | "terms" | null>(null);
 
   // Initialize and handle URL routing (Instant zero-delay resolution from preloaded state)
@@ -302,6 +305,27 @@ function YieldNestApp() {
       path !== "/terms-of-service"
     ) {
       setActiveStaticPage(null);
+    }
+
+    // Master Toolkit & Features Directory
+    if (
+      path === "/toolkit" ||
+      path === "/tools" ||
+      path === "/features" ||
+      path === "/all-features" ||
+      path === "/all-tools"
+    ) {
+      setIsToolkitView(true);
+      setIsHubsIndexView(false);
+      setSelectedHub(null);
+      setIsCalculatorView(false);
+      setSelectedArticle(null);
+      setIsAdminView(false);
+      setPlaceholderView(null);
+      setActiveStaticPage(null);
+      return;
+    } else {
+      setIsToolkitView(false);
     }
 
     // Topic Hubs Index or Specific Topic Hub
@@ -807,6 +831,20 @@ function YieldNestApp() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Navigate to Master Toolkit Directory
+  const handleNavigateToolkit = () => {
+    setIsToolkitView(true);
+    setActiveStaticPage(null);
+    setPlaceholderView(null);
+    setIsCalculatorView(false);
+    setSelectedArticle(null);
+    setIsAdminView(false);
+    setSelectedHub(null);
+    setIsHubsIndexView(false);
+    window.history.pushState({}, "", "/toolkit");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Navigate to article (updates URL with pushState for indexable URL)
   const handleOpenArticle = (post: ArticlePost) => {
     setSelectedArticle(post);
@@ -816,6 +854,7 @@ function YieldNestApp() {
     setActiveStaticPage(null);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     incrementPostViews(post.id);
     window.history.pushState({}, "", `/article/${post.slug}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -831,6 +870,7 @@ function YieldNestApp() {
     setActiveStaticPage(null);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     if (cat === "all") {
       window.history.pushState({}, "", "/");
     } else {
@@ -847,6 +887,7 @@ function YieldNestApp() {
     setShowAuthModal(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     setPlaceholderView(null);
     setActiveStaticPage(null);
     setCurrentCategory("all");
@@ -1069,6 +1110,23 @@ function YieldNestApp() {
             handleSelectCategory(cat);
           }}
           onNavigateArticle={handleOpenArticle}
+          onSearchChange={setSearchQuery}
+          searchQuery={searchQuery}
+        />
+      ) : isToolkitView ? (
+        /* Master Toolkit & Features Directory */
+        <ToolkitDirectoryPage
+          settings={settings}
+          onNavigateHome={handleBackToHome}
+          onNavigateCalculator={(url) => handleOpenCalculators(url)}
+          onNavigateCalculators={() => handleOpenCalculators()}
+          onNavigateGuide={(guideId) => handleNavigateGuides(guideId)}
+          onNavigateHub={(slug) => handleNavigateHub(slug)}
+          onNavigateHubs={() => handleNavigateHub()}
+          onNavigateGlossary={handleNavigateGlossary}
+          onNavigateFAQ={handleNavigateFAQ}
+          onNavigateAbout={handleNavigateAbout}
+          onNavigateTerms={handleNavigateTerms}
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
         />
@@ -1453,6 +1511,7 @@ function YieldNestApp() {
             onNavigateHubs={() => handleNavigateHub()}
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
           />
         </>
       ) : (
@@ -1474,31 +1533,20 @@ function YieldNestApp() {
             onNavigateHubs={() => handleNavigateHub()}
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
           />
 
           <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-10">
-            {/* Featured Quantitative Calculators Banner */}
-            <div className="bg-gradient-to-r from-[#1e293b] via-[#151f30] to-[#0f172a] text-white p-5 sm:p-6 rounded-2xl border border-slate-700/80 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 text-[10px] font-mono-data uppercase tracking-wider text-emerald-400 font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
-                  <span>{t("hero.badge")}</span>
-                </div>
-                <h2 className="text-lg sm:text-xl font-bold font-serif-editorial text-white">
-                  {t("hero.title")}
-                </h2>
-                <p className="text-slate-300 text-xs sm:text-sm font-sans max-w-xl">
-                  {t("hero.subtitle")}
-                </p>
-              </div>
-              <button
-                onClick={() => handleOpenCalculators()}
-                className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs font-mono-data tracking-wide transition-all shadow-md flex items-center gap-2 group cursor-pointer"
-              >
-                <span>{t("hero.cta")}</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </div>
+            {/* Above-the-Fold Investor Command Deck (Calculators, Checklists, Hubs, Glossary) */}
+            <InvestorCommandDeck
+              onNavigateCalculator={(url) => handleOpenCalculators(url)}
+              onNavigateCalculators={() => handleOpenCalculators()}
+              onNavigateGuide={(guideId) => handleNavigateGuides(guideId)}
+              onNavigateHub={(slug) => handleNavigateHub(slug)}
+              onNavigateHubs={() => handleNavigateHub()}
+              onNavigateGlossary={handleNavigateGlossary}
+              onNavigateToolkit={handleNavigateToolkit}
+            />
 
             {/* Loading State */}
             {loading ? (
@@ -1553,6 +1601,7 @@ function YieldNestApp() {
             onNavigateHubs={() => handleNavigateHub()}
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
           />
         </>
       )}

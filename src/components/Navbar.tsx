@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, Menu, X, Calculator, HelpCircle, BookMarked, BookOpen, Compass, Users, Scale } from "lucide-react";
+import { Search, Menu, X, Calculator, HelpCircle, BookMarked, BookOpen, Compass, Users, Scale, Sparkles } from "lucide-react";
 import { ArticleCategory, SiteSettings } from "../types";
 import { YieldNestLogo } from "./YieldNestLogo";
 import { LanguageSelector } from "./LanguageSelector";
@@ -14,13 +14,14 @@ interface NavbarProps {
   onNavigateHome: () => void;
   isCalculatorView?: boolean;
   onNavigateCalculators?: () => void;
-  activeMenu?: "calculators" | "faq" | "glossary" | "guides" | "hubs" | "about" | "terms" | "categories" | "none";
+  activeMenu?: "calculators" | "faq" | "glossary" | "guides" | "hubs" | "about" | "terms" | "categories" | "toolkit" | "none";
   onNavigateFAQ?: () => void;
   onNavigateGlossary?: () => void;
   onNavigateGuides?: () => void;
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
 }
 
 export function Navbar({
@@ -38,6 +39,7 @@ export function Navbar({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, isHindi } = useLanguage();
@@ -53,11 +55,12 @@ export function Navbar({
 
   const menuTools = [
     {
-      id: "hubs" as const,
-      label: t("nav.topicHubs"),
-      href: "/hubs",
-      icon: Compass,
-      onClick: onNavigateHubs,
+      id: "toolkit" as const,
+      label: isHindi ? "सभी साधन (All Tools)" : "All Tools & Hubs",
+      href: "/toolkit",
+      icon: Sparkles,
+      onClick: onNavigateToolkit,
+      highlight: true,
     },
     {
       id: "calculators" as const,
@@ -67,11 +70,18 @@ export function Navbar({
       onClick: onNavigateCalculators,
     },
     {
-      id: "faq" as const,
-      label: t("nav.faq"),
-      href: "/faq",
-      icon: HelpCircle,
-      onClick: onNavigateFAQ,
+      id: "guides" as const,
+      label: t("nav.guides"),
+      href: "/guides",
+      icon: BookOpen,
+      onClick: onNavigateGuides,
+    },
+    {
+      id: "hubs" as const,
+      label: t("nav.topicHubs"),
+      href: "/hubs",
+      icon: Compass,
+      onClick: onNavigateHubs,
     },
     {
       id: "glossary" as const,
@@ -81,11 +91,11 @@ export function Navbar({
       onClick: onNavigateGlossary,
     },
     {
-      id: "guides" as const,
-      label: t("nav.guides"),
-      href: "/guides",
-      icon: BookOpen,
-      onClick: onNavigateGuides,
+      id: "faq" as const,
+      label: t("nav.faq"),
+      href: "/faq",
+      icon: HelpCircle,
+      onClick: onNavigateFAQ,
     },
     {
       id: "about" as const,

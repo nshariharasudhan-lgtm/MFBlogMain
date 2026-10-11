@@ -16,6 +16,7 @@ interface FooterProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
 }
 
 export function Footer({
@@ -29,6 +30,7 @@ export function Footer({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
 }: FooterProps) {
   const { t, isHindi } = useLanguage();
   const categories: ArticleCategory[] = [
@@ -122,6 +124,15 @@ export function Footer({
               Investor Resources
             </div>
             <ul className="space-y-0.5 text-stone-600 text-xs">
+              <li>
+                <a
+                  href="/toolkit"
+                  onClick={(e) => navigateTo(e, "/toolkit", onNavigateToolkit)}
+                  className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
+                >
+                  <span>✨ All Tools &amp; Hubs Directory</span>
+                </a>
+              </li>
               <li>
                 <a
                   href="/hubs"

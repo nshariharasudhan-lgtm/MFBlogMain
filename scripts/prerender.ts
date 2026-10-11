@@ -797,6 +797,12 @@ function buildSitemapXmlString(articles: any[]): string {
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>${CANONICAL_ORIGIN}/toolkit</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
     <loc>${CANONICAL_ORIGIN}/calculators</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
@@ -2206,6 +2212,105 @@ function injectTermsPage(template: string): string {
   return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
 }
 
+function injectToolkitDirectoryPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/toolkit`;
+  const title = "YieldNest Investor Toolkit: Calculators, Checklists & Regulatory Hubs Directory";
+  const description = "Complete directory of YieldNest tools: 7 mutual fund calculators, due diligence checklists, fund selection frameworks, 7 SEBI regulatory topic hubs, and investor glossary.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Investor Toolkit",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Investor Toolkit</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        YieldNest Master Directory
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        YieldNest Investor Toolkit & Resource Directory
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        Everything you need to analyze, audit, and optimize your Indian mutual fund portfolio. Browse our full catalog of quantitative calculators, actionable pre-redemption checklists, and SEBI regulatory hubs.
+      </p>
+    </header>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:1.5rem;margin-bottom:2rem;">
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#047857;text-transform:uppercase;font-weight:600;">7 Calculators</span>
+        <h2 style="font-size:1.2rem;font-weight:700;margin:0.5rem 0;">Quantitative Calculators Suite</h2>
+        <p style="font-size:0.875rem;line-height:1.5;color:#57534e;margin-bottom:1rem;">Interactive calculators for SIP compounding, Step-Up salary top-ups, SWP retirement longevity, and Direct vs Regular expense ratio fee drag.</p>
+        <a href="/calculators" style="font-size:0.8rem;font-family:monospace;color:#047857;font-weight:600;text-decoration:none;">Open Calculators Suite &rarr;</a>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#0369a1;text-transform:uppercase;font-weight:600;">Actionable Due Diligence</span>
+        <h2 style="font-size:1.2rem;font-weight:700;margin:0.5rem 0;">Investor Checklists & Guides</h2>
+        <p style="font-size:0.875rem;line-height:1.5;color:#57534e;margin-bottom:1rem;">Pre-redemption 10-point tax checklist, 7-step institutional fund selection framework, and Consolidated Account Statement (CAS) audit tutorial.</p>
+        <a href="/guides" style="font-size:0.8rem;font-family:monospace;color:#0369a1;font-weight:600;text-decoration:none;">View All Guides &rarr;</a>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#7c3aed;text-transform:uppercase;font-weight:600;">7 Topic Hubs</span>
+        <h2 style="font-size:1.2rem;font-weight:700;margin:0.5rem 0;">SEBI & AMFI Regulatory Hubs</h2>
+        <p style="font-size:0.875rem;line-height:1.5;color:#57534e;margin-bottom:1rem;">Curated research clusters on SEBI 36 scheme categorization, capital gains taxation (Finance Act 2024), and liquidity stress testing.</p>
+        <a href="/hubs" style="font-size:0.8rem;font-family:monospace;color:#7c3aed;font-weight:600;text-decoration:none;">Explore Topic Hubs &rarr;</a>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#b45309;text-transform:uppercase;font-weight:600;">Glossary & Multilingual</span>
+        <h2 style="font-size:1.2rem;font-weight:700;margin:0.5rem 0;">Financial Glossary & Reference</h2>
+        <p style="font-size:0.875rem;line-height:1.5;color:#57534e;margin-bottom:1rem;">Over 40 SEBI/AMFI regulatory terms with math formulas, regulatory FAQ grievance portal guides, and verified Hindi edition.</p>
+        <a href="/glossary" style="font-size:0.8rem;font-family:monospace;color:#b45309;font-weight:600;text-decoration:none;">Browse Glossary &rarr;</a>
+      </div>
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
 export function buildLlmsTxtString(articles: any[]): string {
   const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
   const validArticles = articles.filter((a) => !aliasSourceSlugs.has(a.slug));
@@ -2559,6 +2664,16 @@ async function runPrerender() {
     fs.writeFileSync(path.join(aliasDir, "index.html"), termsHtml, "utf-8");
   }
   console.log(`  ✓ Prerendered /terms and aliases (Canonical: ${CANONICAL_ORIGIN}/terms)`);
+
+  // 3c-5. Prerender Master Toolkit & Resource Directory (/toolkit, /tools, /features, /all-features)
+  const toolkitHtml = injectToolkitDirectoryPage(baseHtml);
+  for (const tPath of ["toolkit", "tools", "features", "all-features", "all-tools"]) {
+    const tDir = path.join(distDir, tPath);
+    fs.mkdirSync(tDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, `${tPath}.html`), toolkitHtml, "utf-8");
+    fs.writeFileSync(path.join(tDir, "index.html"), toolkitHtml, "utf-8");
+  }
+  console.log(`  ✓ Prerendered /toolkit, /tools, /features (Canonical: ${CANONICAL_ORIGIN}/toolkit)`);
 
   // 3d. Generate static HTML fallbacks for legacy/typo slugs so direct file access never 404s
   const LEGACY_ALIASES = [
