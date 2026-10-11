@@ -116,7 +116,7 @@ export function Navbar({
       {/* Main Centered Masthead */}
       <div className="max-w-6xl mx-auto px-4 pt-3.5 sm:pt-5 pb-2.5 sm:pb-3 flex flex-col items-center justify-center relative">
         {/* Language selector & Search bar pinned to top-right on desktop */}
-        <div className="absolute top-3.5 sm:top-5 right-4 hidden md:flex items-center gap-2">
+        <div className="absolute top-3.5 sm:top-5 right-4 hidden sm:flex items-center gap-2">
           <LanguageSelector variant="header" align="right" />
           <div className="relative w-44 lg:w-52">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C887B]" />

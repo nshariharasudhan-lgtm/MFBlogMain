@@ -688,6 +688,16 @@ export function ArticleReader({
           ) : null}
         </div>
 
+        {/* Courteous Notice if site language is Hindi but article only available in English */}
+        {isHindi && !hasHindiTranslation && (
+          <div className="mb-5 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs flex items-center gap-2.5">
+            <Globe className="w-4 h-4 text-amber-700 shrink-0" />
+            <span className="leading-snug">
+              यह विस्तृत अनुसंधान वर्तमान में मूल अंग्रेजी भाषा में उपलब्ध है। हमारे प्रमुख मार्गदर्शक (जैसे <strong>डायरेक्ट प्लान बनाम रेगुलर प्लान</strong>, <strong>SEBI 36 श्रेणियाँ</strong>) प्रमाणित हिन्दी में भी उपलब्ध हैं।
+            </span>
+          </div>
+        )}
+
         {/* Article Title */}
         <h1 className="font-serif-editorial text-3xl sm:text-4xl md:text-5xl text-[#1A1A1A] font-semibold leading-[1.18] tracking-tight mb-4">
           {activeTitle}
