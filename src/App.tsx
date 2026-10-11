@@ -40,6 +40,7 @@ import { TermsAndConditionsPage } from "./components/TermsAndConditionsPage";
 import { InvestorCommandDeck } from "./components/InvestorCommandDeck";
 import { ToolkitDirectoryPage } from "./components/ToolkitDirectoryPage";
 import { CategoryPage } from "./components/CategoryPage";
+import { behaviorTracker } from "./lib/behaviorTracker";
 
 // Code-split heavy components away from initial public visitor bundle
 const ArticleReader = lazy(() =>
@@ -272,7 +273,20 @@ function YieldNestApp() {
       handleRouteFromUrl();
     };
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollHeight > 0) {
+        const pct = (window.scrollY / scrollHeight) * 100;
+        behaviorTracker.trackScroll(pct);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const loadData = async () => {
@@ -295,6 +309,7 @@ function YieldNestApp() {
     const rawPath = window.location.pathname;
     const path = rawPath.replace(/\/+$/, "") || "/";
     const currentList = availablePosts && availablePosts.length > 0 ? availablePosts : posts;
+    behaviorTracker.trackPageView(path);
 
     // Reset static pages unless matched below
     if (
@@ -698,6 +713,12 @@ function YieldNestApp() {
           .toLowerCase()
       : "";
 
+    behaviorTracker.trackToolInteraction(
+      cleanTarget || "calculators-hub",
+      cleanTarget ? `${cleanTarget} Calculator` : "Calculators Hub",
+      "calculator"
+    );
+
     if (cleanTarget === "sip") {
       setActiveCalculatorPage("sip");
       window.history.pushState({}, "", `/calculators/sip${queryString}`);
@@ -864,6 +885,7 @@ function YieldNestApp() {
     setIsHubsIndexView(false);
     setIsToolkitView(false);
     incrementPostViews(post.id);
+    behaviorTracker.trackPageView(`/article/${post.slug}`, post.title, post.category);
     window.history.pushState({}, "", `/article/${post.slug}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -879,6 +901,11 @@ function YieldNestApp() {
     setSelectedHub(null);
     setIsHubsIndexView(false);
     setIsToolkitView(false);
+    behaviorTracker.trackPageView(
+      cat === "all" ? "/" : `/category/${CATEGORY_TO_SLUG[cat]}`,
+      cat === "all" ? "YieldNest - All Research" : `${cat} - Mutual Fund Research`,
+      cat
+    );
     if (cat === "all") {
       window.history.pushState({}, "", "/");
     } else {
@@ -969,6 +996,15 @@ function YieldNestApp() {
     }
     return true;
   });
+
+  // Track search queries & results count with debounce
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return;
+    const timer = setTimeout(() => {
+      behaviorTracker.trackSearch(searchQuery, filteredPosts.length > 0);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [searchQuery, filteredPosts.length]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF9F5] text-[#1A1A1A] font-serif-editorial">

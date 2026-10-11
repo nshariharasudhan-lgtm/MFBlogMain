@@ -17,6 +17,7 @@ import {
   Key,
   ShieldCheck,
   AlertTriangle,
+  Activity,
 } from "lucide-react";
 import { ArticlePost, Comment, ContentSuggestion, SiteSettings, AdminUser } from "../../types";
 import { PostManager } from "./PostManager";
@@ -28,6 +29,7 @@ import { SiteSettingsManager } from "./SiteSettingsManager";
 import { SubscribersManager } from "./SubscribersManager";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 import { SeoPageOneDiagnostic } from "./SeoPageOneDiagnostic";
+import { BehaviorAnalyticsView } from "./BehaviorAnalyticsView";
 import { logoutAdmin } from "../../lib/storage";
 
 interface AdminDashboardProps {
@@ -115,6 +117,15 @@ export function AdminDashboard({
 
     setEditingPost(newPostDraft);
     setActiveTab("editor");
+  };
+
+  const handleDraftFromSearch = (query: string) => {
+    handleDraftSuggestion({
+      title: `${query.charAt(0).toUpperCase() + query.slice(1)}: Complete Analysis & Strategy`,
+      category: "Performance Analysis",
+      hook: `Detailed research and quantitative analysis addressing investor search demand for "${query}".`,
+      estimatedTraffic: "High",
+    });
   };
 
   return (
@@ -270,6 +281,7 @@ export function AdminDashboard({
         <div className="flex items-center gap-1 border-b border-[#EAE8E0] pb-2 overflow-x-auto text-xs font-medium">
           {[
             { id: "posts", label: "Articles Library", icon: FileText },
+            { id: "behavior-analytics", label: "Behavior & Content Intelligence", icon: Activity },
             { id: "seo-diagnostic", label: "Page 1 SEO Diagnostics", icon: BarChart3 },
             { id: "editor", label: editingPost ? "Edit Article" : "Article Studio", icon: Plus },
             { id: "subscribers", label: "Subscribers", icon: Users },
@@ -315,6 +327,17 @@ export function AdminDashboard({
                 await onSavePost({ ...post, status });
               }}
               onSavePost={onSavePost}
+            />
+          )}
+
+          {activeTab === "behavior-analytics" && (
+            <BehaviorAnalyticsView
+              onDraftFromSearch={handleDraftFromSearch}
+              onOpenArticleByPath={(path) => {
+                const cleanSlug = path.replace(/^\/article\//, "");
+                const found = posts.find((p) => p.slug === cleanSlug);
+                if (found) onViewPost(found);
+              }}
             />
           )}
 

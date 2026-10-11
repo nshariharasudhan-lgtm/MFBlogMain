@@ -9,6 +9,14 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { INITIAL_ARTICLES } from "./src/lib/seedData";
 import { LEGACY_ALIASES, buildLlmsTxtString, buildLlmsFullString } from "./scripts/prerender";
+import {
+  initAnalyticsDatabase,
+  recordAnalyticsEvent,
+  recordBatchAnalyticsEvents,
+  getAnalyticsOverview,
+  resetAnalyticsDatabase,
+  exportAnalyticsRawDatabase,
+} from "./server/analyticsDb";
 
 dotenv.config();
 
@@ -425,6 +433,69 @@ app.post("/api/admin/logout", (_req, res) => {
     path: "/",
   });
   return res.json({ success: true, message: "Logged out successfully" });
+});
+
+// -------------------------------------------------------------
+// Dedicated Behavioral Analytics & Content Affinity Engine
+// (Strictly Isolated from Supabase database)
+// -------------------------------------------------------------
+// Initialize isolated analytics database
+initAnalyticsDatabase();
+
+// Ingestion: Record visitor interactions, dwell time, and tool usages
+app.post("/api/analytics/track", (req, res) => {
+  try {
+    let body = req.body;
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch {}
+    }
+
+    if (Array.isArray(body)) {
+      recordBatchAnalyticsEvents(body);
+    } else if (body && typeof body === "object") {
+      recordAnalyticsEvent(body);
+    }
+    return res.status(200).json({ ok: true, timestamp: Date.now() });
+  } catch (err: any) {
+    console.warn("[Analytics Track] Warning:", err?.message);
+    return res.status(200).json({ ok: false });
+  }
+});
+
+// Query: Retrieve aggregated intelligence report for Admin Dashboard
+app.get("/api/analytics/overview", (req, res) => {
+  try {
+    const timeFilter = (req.query.timeFilter as any) || "all";
+    const data = getAnalyticsOverview(timeFilter);
+    return res.json(data);
+  } catch (err: any) {
+    console.error("[Analytics Overview] Error:", err);
+    return res.status(500).json({ error: "Failed to generate analytics overview" });
+  }
+});
+
+// Reset: Admin-only reset of behavioral metrics
+app.post("/api/analytics/reset", requireAdminAuth, (_req, res) => {
+  try {
+    resetAnalyticsDatabase();
+    return res.json({ success: true, message: "Behavioral analytics reset to clean baseline." });
+  } catch (err: any) {
+    return res.status(500).json({ error: "Failed to reset analytics database" });
+  }
+});
+
+// Export: Admin-only raw database JSON download
+app.get("/api/analytics/export", requireAdminAuth, (_req, res) => {
+  try {
+    const rawData = exportAnalyticsRawDatabase();
+    res.setHeader("Content-Disposition", 'attachment; filename="yieldnest_behavior_analytics.json"');
+    res.setHeader("Content-Type", "application/json");
+    return res.send(JSON.stringify(rawData, null, 2));
+  } catch (err: any) {
+    return res.status(500).json({ error: "Failed to export analytics database" });
+  }
 });
 
 // -------------------------------------------------------------

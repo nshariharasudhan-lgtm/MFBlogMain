@@ -161,3 +161,81 @@ export interface Subscriber {
   subscribedAt: string;
 }
 
+export interface ContentAffinityItem {
+  path: string;
+  title: string;
+  category: string;
+  views: number;
+  totalDwellSeconds: number;
+  avgDwellSeconds: number;
+  scroll25: number;
+  scroll50: number;
+  scroll75: number;
+  scroll100: number;
+  shares: number;
+  affinityScore: number; // 0 - 100 calculated by algorithm
+  lastViewed: string;
+}
+
+export interface ToolUsageItem {
+  toolId: string;
+  toolName: string;
+  category: "calculator" | "guide" | "hub" | "reference";
+  path: string;
+  usesCount: number;
+  interactionsCount: number;
+  shareClicks: number;
+  avgSessionSeconds: number;
+  stickinessIndex: number; // 0 - 100 calculated by algorithm
+  lastUsed: string;
+}
+
+export interface SearchQueryItem {
+  query: string;
+  count: number;
+  resultsFound: boolean;
+  lastSearched: string;
+}
+
+export interface UserJourneyPattern {
+  fromPath: string;
+  toPath: string;
+  count: number;
+  transitionProbability: number;
+}
+
+export interface UserBehaviorSession {
+  sessionId: string;
+  startedAt: string;
+  lastActiveAt: string;
+  deviceType: "desktop" | "mobile" | "tablet";
+  pagesVisited: string[];
+  toolsUsed: string[];
+  totalDurationSeconds: number;
+}
+
+export interface BehaviorAnalyticsDatabaseStatus {
+  type: string;
+  filePath: string;
+  status: string;
+  isolatedFromSupabase: boolean;
+  lastUpdated: string;
+  totalTrackedSessions: number;
+}
+
+export interface AnalyticsOverviewData {
+  databaseStatus: BehaviorAnalyticsDatabaseStatus;
+  summary: {
+    totalSessions: number;
+    totalPageViews: number;
+    totalToolInteractions: number;
+    totalActiveReadingMinutes: number;
+    avgDwellSecondsPerSession: number;
+  };
+  contentAffinity: ContentAffinityItem[];
+  toolUsage: ToolUsageItem[];
+  journeyPatterns: UserJourneyPattern[];
+  searchTrends: SearchQueryItem[];
+  recentSessions: UserBehaviorSession[];
+}
+
