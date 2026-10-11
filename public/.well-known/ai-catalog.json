@@ -1,0 +1,26 @@
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "identifier": "urn:air:yieldnest:research:mutual-fund-analyst",
+      "displayName": "Indian Mutual Fund Research & Analytics",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://www.yieldnest.online/llms-full.txt",
+      "representativeQueries": [
+        "What are the top performing mutual funds in India based on AMFI data?",
+        "Compare Quant Small Cap vs Nippon India Small Cap returns and risk ratios",
+        "How does Total Expense Ratio (TER) impact mutual fund compounding in Direct vs Regular plans?"
+      ]
+    },
+    {
+      "identifier": "urn:air:yieldnest:analytics:amfi-data-feed",
+      "displayName": "AMFI Scheme Performance & Categorization Feed",
+      "type": "application/agent-card+json",
+      "url": "https://www.yieldnest.online/api/posts",
+      "representativeQueries": [
+        "Get AMFI historical NAVs and 3Y 5Y rolling returns for Indian equity funds",
+        "Fetch quantitative mutual fund categorization updates and SEBI stress test data"
+      ]
+    }
+  ]
+}

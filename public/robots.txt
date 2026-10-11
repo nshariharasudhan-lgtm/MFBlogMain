@@ -1,0 +1,43 @@
+# robots.txt for YieldNest.online (Independent Mutual Fund Research & Analytics)
+User-agent: *
+Allow: /
+Disallow: /admin
+
+# Explicit permissions for Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+
+# Google Search Console URL Inspection Tool
+User-agent: Google-InspectionTool
+Allow: /
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+
+# AI Search & Research Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Canonical Sitemap and LLM context endpoints
+Sitemap: https://www.yieldnest.online/sitemap.xml
+# LLM-Summary: https://www.yieldnest.online/llms.txt
+# LLM-Full: https://www.yieldnest.online/llms-full.txt
+# AI Catalog (ARD Specification): https://www.yieldnest.online/.well-known/ai-catalog.json

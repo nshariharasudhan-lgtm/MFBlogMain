@@ -1,0 +1,2657 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import { createClient } from "@supabase/supabase-js";
+import { INITIAL_ARTICLES } from "../src/lib/seedData";
+import { GLOSSARY_TERMS } from "../src/data/glossaryData";
+import { TOPIC_HUBS, TopicHubData } from "../src/data/topicHubsData";
+import { DUE_DILIGENCE_CHECKLIST, REDEMPTION_CHECKLIST, FUND_CATEGORIES } from "../src/data/guidesData";
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, "..");
+const distDir = path.join(rootDir, "dist");
+
+const CANONICAL_ORIGIN = "https://www.yieldnest.online";
+
+// Prerender Supabase client
+const rawSupabaseUrl = (process.env.VITE_SUPABASE_URL || "").trim();
+const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?.*$/i, "").replace(/\/+$/, "").trim();
+const supabaseKey = (process.env.VITE_SUPABASE_ANON_KEY || "").trim();
+const prerenderSupabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
+const CATEGORY_META: Record<string, { name: string; title: string; description: string }> = {
+  "fund-comparison": {
+    name: "Fund Comparison",
+    title: "Fund Comparison & Analysis | YieldNest",
+    description: "Side-by-side mutual fund analyses, 5-year rolling returns, downside capture, and AMFI scheme comparisons on YieldNest.online.",
+  },
+  "performance-analysis": {
+    name: "Performance Analysis",
+    title: "Performance & Rolling Returns | YieldNest",
+    description: "Quantitative mutual fund performance analysis, risk-adjusted ratios (Sharpe, Sortino), and rolling return evaluations.",
+  },
+  "market-trends": {
+    name: "Market Trends",
+    title: "Market Trends & Inflow Analytics | YieldNest",
+    description: "Analysis of Indian mutual fund market trends, AMFI monthly inflow trajectories, SIP book growth, and industry liquidity.",
+  },
+  "category-deep-dive": {
+    name: "Category Deep-Dive",
+    title: "Category Deep-Dive Analyses | YieldNest",
+    description: "Comprehensive deep-dives into Indian equity fund categories: Flexi Cap, Small Cap, Large & Mid Cap, and Index funds.",
+  },
+  "sip-strategies": {
+    name: "SIP Strategies",
+    title: "SIP Strategies & Compounding | YieldNest",
+    description: "Mathematical frameworks for systematic investment planning, step-up SIP compounding, and direct plan cost optimization.",
+  },
+};
+
+const CATEGORY_NAME_TO_SLUG: Record<string, string> = {
+  "Fund Comparison": "fund-comparison",
+  "Performance Analysis": "performance-analysis",
+  "Market Trends": "market-trends",
+  "Category Deep-Dive": "category-deep-dive",
+  "SIP Strategies": "sip-strategies",
+};
+
+export const LEGACY_ALIASES: Array<{ sourceSlug: string; targetSlug: string }> = [
+  {
+    sourceSlug: "direct-vs-regular-mutual-funds-charges-commissions-compissions",
+    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
+  },
+  {
+    sourceSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market-volatility",
+    targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
+  },
+  {
+    sourceSlug: "total-expense-ratio-ter-breakdown-impact-sip-returns",
+    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
+  },
+  {
+    sourceSlug: "direct-vs-regular-plans-true-cost-distributor-commissions",
+    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
+  },
+  {
+    sourceSlug: "direct-vs-regular-mutual-funds-difference",
+    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
+  },
+  {
+    sourceSlug: "total-expense-ratio-compounding-cost-drag-10-20-30-years",
+    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
+  },
+  {
+    sourceSlug: "what-is-expense-ratio-impact-on-returns",
+    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
+  },
+  {
+    sourceSlug: "sip-vs-lump-sum-which-is-better",
+    targetSlug: "sip-vs-lumpsum-quantitative-return-comparison-market-cycles",
+  },
+  {
+    sourceSlug: "index-fund-vs-active-mutual-fund-india",
+    targetSlug: "index-funds-vs-active-funds-india-tracking-error-alpha-decay",
+  },
+  {
+    sourceSlug: "large-cap-vs-large-and-mid-cap-funds",
+    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+  },
+  {
+    sourceSlug: "large-cap-vs-mid-cap-vs-small-cap-difference",
+    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+  },
+  {
+    sourceSlug: "flexi-cap-vs-large-cap-difference",
+    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+  },
+  {
+    sourceSlug: "mid-cap-vs-small-cap-funds-risk-return",
+    targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
+  },
+  {
+    sourceSlug: "how-mutual-fund-capital-gains-are-taxed-equity-vs-debt",
+    targetSlug: "mutual-fund-taxation-india-guide",
+  },
+  {
+    sourceSlug: "are-mutual-funds-tax-free-india-guide",
+    targetSlug: "mutual-fund-taxation-india-guide",
+  },
+  {
+    sourceSlug: "best-mutual-funds-india-performance-analysis-2024",
+    targetSlug: "best-mutual-funds-india-2026-data-analysis",
+  },
+];
+
+function escapeHtml(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderMarkdownToHtml(markdown: string): string {
+  if (!markdown) return "";
+  let html = markdown
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Code blocks
+  html = html.replace(/```([a-z0-9_-]*)\n([\s\S]*?)```/gi, (_m, _lang, code) => {
+    return `<pre style="background:#1c1a17;color:#f3f1e9;padding:1rem;border-radius:0.75rem;overflow-x:auto;font-size:0.8rem;margin:1.25rem 0;"><code>${code.trim()}</code></pre>`;
+  });
+  html = html.replace(/`([^`]+)`/g, `<code style="background:#eae8e0;padding:0.15rem 0.35rem;border-radius:0.25rem;font-size:0.85em;">$1</code>`);
+
+  // Headings
+  html = html.replace(/^### (.*$)/gim, `<h3 style="font-size:1.15rem;font-weight:600;margin-top:1.5rem;margin-bottom:0.5rem;color:#1a1a1a;">$1</h3>`);
+  html = html.replace(/^## (.*$)/gim, `<h2 style="font-size:1.4rem;font-weight:600;margin-top:2rem;margin-bottom:0.75rem;padding-bottom:0.25rem;border-bottom:1px solid #eae8e0;color:#1a1a1a;">$1</h2>`);
+  html = html.replace(/^# (.*$)/gim, `<h1 style="font-size:1.75rem;font-weight:700;margin-top:2rem;margin-bottom:1rem;color:#1a1a1a;">$1</h1>`);
+
+  // Blockquotes
+  html = html.replace(/^> (.*$)/gim, `<blockquote style="border-left:4px solid #d97706;padding:0.5rem 1rem;margin:1rem 0;background:#fffbeb;font-style:italic;color:#451a03;border-radius:0 0.5rem 0.5rem 0;">$1</blockquote>`);
+
+  // Horizontal rules
+  html = html.replace(/^---$/gim, `<hr style="margin:1.75rem 0;border:0;border-top:1px solid #eae8e0;" />`);
+
+  // Bold & Italic
+  html = html.replace(/\*\*([^*]+)\*\*/g, `<strong>$1</strong>`);
+  html = html.replace(/\*([^*]+)\*/g, `<em>$1</em>`);
+
+  // Links (strictly sanitized against javascript:/vbscript:/data: schemes)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, rawUrl) => {
+    const trimmed = (rawUrl || "").trim();
+    const isSafe =
+      /^https?:\/\//i.test(trimmed) ||
+      /^\/(?!\/)/.test(trimmed) ||
+      /^#[a-z0-9_-]+$/i.test(trimmed) ||
+      /^mailto:[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(trimmed);
+    const safeUrl = isSafe ? escapeHtml(trimmed) : "#";
+    return `<a href="${safeUrl}" style="color:#065f46;text-decoration:underline;font-weight:500;">${text}</a>`;
+  });
+
+  // Tables
+  const lines = html.split("\n");
+  const parsedLines: string[] = [];
+  let inTable = false;
+  let tableHeaderDone = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith("|") && line.endsWith("|")) {
+      const cells = line.slice(1, -1).split("|").map((c) => c.trim());
+      if (cells.every((c) => /^:?-+:?$/.test(c))) {
+        continue;
+      }
+      if (!inTable) {
+        inTable = true;
+        tableHeaderDone = false;
+        parsedLines.push(`<div style="overflow-x:auto;margin:1.5rem 0;"><table style="width:100%;font-size:0.85rem;border-collapse:collapse;border:1px solid #e5e3dc;background:#ffffff;border-radius:0.5rem;">`);
+      }
+      if (!tableHeaderDone) {
+        tableHeaderDone = true;
+        parsedLines.push(`<thead style="background:#f4f2eb;font-weight:600;border-bottom:1px solid #e5e3dc;"><tr>${cells.map((c) => `<th style="padding:0.6rem 0.8rem;text-align:left;">${c}</th>`).join("")}</tr></thead><tbody>`);
+      } else {
+        parsedLines.push(`<tr style="border-bottom:1px solid #f0eee6;">${cells.map((c) => `<td style="padding:0.6rem 0.8rem;">${c}</td>`).join("")}</tr>`);
+      }
+    } else {
+      if (inTable) {
+        inTable = false;
+        parsedLines.push(`</tbody></table></div>`);
+      }
+      parsedLines.push(lines[i]);
+    }
+  }
+  if (inTable) {
+    parsedLines.push(`</tbody></table></div>`);
+  }
+  html = parsedLines.join("\n");
+
+  // Paragraphs & Lists
+  const paragraphs = html.split(/\n\s*\n/);
+  html = paragraphs
+    .map((p) => {
+      const trimmed = p.trim();
+      if (!trimmed) return "";
+      if (
+        trimmed.startsWith("<h") ||
+        trimmed.startsWith("<table") ||
+        trimmed.startsWith("<div") ||
+        trimmed.startsWith("<blockquote") ||
+        trimmed.startsWith("<hr") ||
+        trimmed.startsWith("<pre") ||
+        trimmed.startsWith("<ul") ||
+        trimmed.startsWith("<ol")
+      ) {
+        return trimmed;
+      }
+      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+        const items = trimmed.split("\n").filter((l) => l.trim().startsWith("- ") || l.trim().startsWith("* "));
+        return `<ul style="margin:1rem 0;padding-left:1.5rem;line-height:1.7;">${items.map((it) => `<li>${it.replace(/^[-*]\s+/, "")}</li>`).join("")}</ul>`;
+      }
+      return `<p style="margin-bottom:1.15rem;line-height:1.75;color:#2d2a26;">${trimmed.replace(/\n/g, "<br />")}</p>`;
+    })
+    .join("\n");
+
+  return html;
+}
+
+async function loadAllArticles(): Promise<any[]> {
+  const articlesMap = new Map<string, any>();
+
+  // 1. Load initial seed articles
+  for (const art of INITIAL_ARTICLES) {
+    if (art && art.status === "published") {
+      articlesMap.set(art.slug, art);
+    }
+  }
+
+  // 2. Load custom posts from server_data if available
+  const customPostsFile = path.join(rootDir, "server_data", "custom_posts.json");
+  if (fs.existsSync(customPostsFile)) {
+    try {
+      const customs = JSON.parse(fs.readFileSync(customPostsFile, "utf-8"));
+      if (Array.isArray(customs)) {
+        for (const art of customs) {
+          if (art && art.status === "published") {
+            articlesMap.set(art.slug, art);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load custom_posts.json:", e);
+    }
+  }
+
+  // 3. Supabase posts if available
+  if (prerenderSupabase) {
+    try {
+      const { data, error } = await prerenderSupabase
+        .from("posts")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        for (const d of data) {
+          articlesMap.set(d.slug, {
+            id: d.id,
+            slug: d.slug,
+            title: d.title,
+            excerpt: d.excerpt,
+            content: d.content,
+            category: d.category,
+            tags: d.tags || [],
+            status: d.status,
+            authorName: "YieldNest Research Desk",
+            authorTitle: "YieldNest Research Desk",
+            authorAvatar: d.author_avatar,
+            coverImage: d.cover_image,
+            readTimeMinutes: d.read_time_minutes || 6,
+            viewsCount: d.views_count || 0,
+            amfiSchemeCodes: d.amfi_scheme_codes || [],
+            amfiDataSnapshot: d.amfi_data_snapshot || [],
+            seoMetadata: d.seo_metadata || {},
+            socialSnippets: d.social_shares || {},
+            scheduledFor: d.scheduled_for,
+            publishedAt: d.published_at,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch Supabase posts during prerender:", err);
+    }
+  }
+
+  // 4. Filter deleted post IDs
+  const deletedFile = path.join(rootDir, "server_data", "deleted_post_ids.json");
+  if (fs.existsSync(deletedFile)) {
+    try {
+      const deletedIds = JSON.parse(fs.readFileSync(deletedFile, "utf-8"));
+      if (Array.isArray(deletedIds)) {
+        const deletedSet = new Set(deletedIds);
+        for (const [slug, art] of articlesMap.entries()) {
+          if (deletedSet.has(art.id) || deletedSet.has(slug)) {
+            articlesMap.delete(slug);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load deleted_post_ids.json:", e);
+    }
+  }
+
+  return Array.from(articlesMap.values()).sort((a, b) => {
+    const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
+    const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
+    return timeB - timeA;
+  });
+}
+
+function buildSharedFooterHtml(): string {
+  return `<footer style="margin-top:3.5rem;padding-top:2rem;border-top:1px solid #eae8e0;font-family:system-ui, -apple-system, sans-serif;font-size:0.85rem;color:#57534e;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:2rem;margin-bottom:2rem;">
+      <div>
+        <div style="font-weight:700;color:#1a1a1a;margin-bottom:0.75rem;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.05em;">Research Categories</div>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li><a href="/category/fund-comparison" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">Fund Comparisons</a></li>
+          <li><a href="/category/performance-analysis" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">Performance Analysis</a></li>
+          <li><a href="/category/market-trends" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">Market Trends</a></li>
+          <li><a href="/category/category-deep-dive" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">Category Deep-Dive</a></li>
+          <li><a href="/category/sip-strategies" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">SIP Strategies</a></li>
+        </ul>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#1a1a1a;margin-bottom:0.75rem;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.05em;">Investor Resources</div>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li><a href="/hubs" style="color:#047857;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">🎯 Topic Hubs</a></li>
+          <li><a href="/calculators" style="color:#047857;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">🧮 Calculators Suite</a></li>
+          <li><a href="/calculators/sip" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• SIP Calculator</a></li>
+          <li><a href="/calculators/step-up-sip" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Step-Up SIP Calculator</a></li>
+          <li><a href="/calculators/lumpsum" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Lumpsum Calculator</a></li>
+          <li><a href="/calculators/swp" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• SWP Calculator</a></li>
+          <li><a href="/calculators/goal-planner" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Goal Planner Calculator</a></li>
+          <li><a href="/calculators/tax-estimator" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Mutual Fund Tax Estimator</a></li>
+          <li><a href="/calculators/direct-vs-regular" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Direct vs Regular TER Drag</a></li>
+          <li><a href="/guides" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">📚 Investor Guides</a></li>
+          <li><a href="/guides/how-to-choose-a-mutual-fund" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• How to Choose a Fund</a></li>
+          <li><a href="/guides/redemption-checklist" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">• Redemption Checklist</a></li>
+          <li><a href="/faq" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">❓ Mutual Fund FAQ</a></li>
+          <li><a href="/glossary" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">📖 Term Glossary</a></li>
+          <li><a href="/about" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">ℹ️ About Us</a></li>
+          <li><a href="/terms" style="color:#44403c;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:0.25rem 0;">⚖️ Terms &amp; Disclaimers</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;font-size:0.75rem;line-height:1.5;">
+      Mutual fund investments are subject to market risks. Read all scheme-related documents carefully. This site is for education only and is not investment advice. Past performance does not guarantee future returns.
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap;font-size:0.75rem;font-family:monospace;color:#78716c;">
+      <a href="/about" style="color:#57534e;text-decoration:underline;">About Us</a> &bull;
+      <a href="/terms" style="color:#57534e;text-decoration:underline;">Terms of Use</a> &bull;
+      <a href="/sitemap.xml" style="color:#57534e;text-decoration:underline;">Sitemap</a> &bull;
+      <a href="/robots.txt" style="color:#57534e;text-decoration:underline;">Robots.txt</a> &bull;
+      <a href="/llms.txt" style="color:#57534e;text-decoration:underline;">LLMs.txt</a>
+    </div>
+  </footer>`;
+}
+
+function injectHomepage(template: string, articles: any[]): string {
+  const title = "YieldNest.online – Independent Mutual Fund Research & Analytics";
+  const description = "Data-driven research on Indian Mutual Funds. Unbiased fund comparisons, rolling return analyses, portfolio overlap checks, and market analytics on YieldNest.online.";
+  const url = `${CANONICAL_ORIGIN}/`;
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${url}#website`,
+        "name": "YieldNest.online",
+        "url": url,
+        "description": description,
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": url,
+        },
+        "inLanguage": "en-IN",
+      },
+      {
+        "@type": "Organization",
+        "@id": `${url}#organization`,
+        "name": "YieldNest.online",
+        "url": url,
+        "description": "Independent Quantitative Mutual Fund Research & Analytics Publication",
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const homeKeywords = "mutual funds India, AMFI, SIP investment, mutual fund performance, rolling returns, Indian equity, fund comparison, mutual fund calculator";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${url}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${url}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <header style="text-align:center;margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid #eae8e0;">
+      <h1 style="font-size:2.5rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;">
+        YieldNest.online
+      </h1>
+      <p style="font-size:1.1rem;color:#57534e;max-w-2xl;margin:0 auto;line-height:1.6;">
+        ${escapeHtml(description)}
+      </p>
+      <nav aria-label="Research Categories & Calculators" style="margin-top:1.5rem;display:flex;justify-content:center;gap:0.75rem;flex-wrap:wrap;font-size:0.8rem;font-family:monospace;">
+        <a href="/category/fund-comparison" style="color:#1a1a1a;padding:0.35rem 0.75rem;background:#eae8e0;border-radius:0.5rem;text-decoration:none;">Fund Comparisons</a>
+        <a href="/category/performance-analysis" style="color:#1a1a1a;padding:0.35rem 0.75rem;background:#eae8e0;border-radius:0.5rem;text-decoration:none;">Performance Analysis</a>
+        <a href="/category/market-trends" style="color:#1a1a1a;padding:0.35rem 0.75rem;background:#eae8e0;border-radius:0.5rem;text-decoration:none;">Market Trends</a>
+        <a href="/category/category-deep-dive" style="color:#1a1a1a;padding:0.35rem 0.75rem;background:#eae8e0;border-radius:0.5rem;text-decoration:none;">Category Deep-Dive</a>
+        <a href="/category/sip-strategies" style="color:#1a1a1a;padding:0.35rem 0.75rem;background:#eae8e0;border-radius:0.5rem;text-decoration:none;">SIP Tactics</a>
+        <a href="/calculators" style="color:#065f46;background:#d1fae5;font-weight:700;padding:0.35rem 0.75rem;border-radius:0.5rem;text-decoration:none;border:1px solid #a7f3d0;">🧮 Calculators Suite</a>
+      </nav>
+    </header>
+    <main>
+      <section style="margin-bottom:3rem;padding:2rem;background:#fbfaf8;border:1px solid #eae8e0;border-radius:0.75rem;">
+        <div style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.35rem;">
+          Financial Simulation Tools
+        </div>
+        <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;">
+          Mutual Fund Quantitative Calculator Suite
+        </h2>
+        <p style="font-size:0.95rem;color:#57534e;line-height:1.6;margin-bottom:1.25rem;">
+          Mathematically simulate Total Expense Ratio drag, annual step-up compounding, SIP delay penalties, and lumpsum entry dynamics under Indian market conditions.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem;">
+          <a href="/calculator/direct-vs-regular" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+            <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Direct vs Regular Calculator</strong>
+            <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Calculate how much corpus you forfeit to distributor trail commissions &amp; TER drag.</span>
+          </a>
+          <a href="/calculator/step-up-sip" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+            <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Step-Up SIP Calculator</strong>
+            <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Model compounding acceleration by increasing your monthly SIP by 5% to 25% each year.</span>
+          </a>
+          <a href="/calculator/cost-of-delay" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+            <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Cost of Delay Calculator</strong>
+            <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Find out the compound interest penalty of waiting 6 months to 5 years before starting.</span>
+          </a>
+          <a href="/calculator/sip-vs-lumpsum" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+            <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">SIP vs Lumpsum Comparator</strong>
+            <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Compare rupee-cost averaging against a one-time lump-sum allocation with delta analytics.</span>
+          </a>
+        </div>
+      </section>
+
+      <h2 style="font-size:1.2rem;font-family:monospace;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;color:#292524;">
+        Mutual Fund Research &amp; Analysis
+      </h2>
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+        ${articles
+          .map(
+            (art) => `<article style="padding:1.5rem;background:#fbfaf8;border:1px solid #eae8e0;border-radius:0.75rem;">
+              <div style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:600;margin-bottom:0.35rem;">
+                ${escapeHtml(art.category)}
+              </div>
+              <h3 style="font-size:1.35rem;font-weight:600;margin-bottom:0.5rem;">
+                <a href="/article/${encodeURIComponent(art.slug)}" style="color:#1a1a1a;text-decoration:underline;">${escapeHtml(art.title)}</a>
+              </h3>
+              <p style="font-size:0.95rem;color:#57534e;line-height:1.6;margin-bottom:0.75rem;">
+                ${escapeHtml(art.excerpt)}
+              </p>
+              <div style="font-size:0.75rem;font-family:monospace;color:#78716c;">
+                <span>Published: ${new Date(art.publishedAt || art.createdAt || Date.now()).toLocaleDateString()}</span> • <span>${art.readTimeMinutes || 6} min read</span>
+              </div>
+            </article>`
+          )
+          .join("\n")}
+      </div>
+    </main>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectCategory(template: string, categorySlug: string, articles: any[]): string {
+  const meta = CATEGORY_META[categorySlug];
+  if (!meta) return template;
+
+  const title = `${meta.title}`;
+  const description = `${meta.description}`;
+  // Strictly clean canonical URL with NO trailing slash
+  const url = `${CANONICAL_ORIGIN}/category/${categorySlug}`;
+  const categoryArticles = articles.filter(
+    (a) => (CATEGORY_NAME_TO_SLUG[a.category] || "").toLowerCase() === categorySlug.toLowerCase()
+  );
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#collection`,
+        "url": url,
+        "name": title,
+        "description": description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "name": "YieldNest.online",
+          "url": `${CANONICAL_ORIGIN}/`,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": meta.name,
+            "item": url,
+          },
+        ],
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${url}#itemlist`,
+        "name": `${meta.name} Research Articles`,
+        "itemListElement": categoryArticles.map((art, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "name": art.title,
+          "url": `${CANONICAL_ORIGIN}/article/${encodeURIComponent(art.slug)}`,
+        })),
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const catKeywords = `${meta.name}, mutual fund research, AMFI, performance analysis, rolling returns, Indian mutual funds`;
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${url}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${url}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">${escapeHtml(meta.name)}</span>
+    </nav>
+    <header style="margin-bottom:2.5rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <span style="display:inline-block;padding:0.25rem 0.6rem;background:#1a1a1a;color:#ffffff;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;">
+        Research Category
+      </span>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;">
+        ${escapeHtml(meta.name)} Mutual Fund Research
+      </h1>
+      <p style="font-size:1rem;color:#57534e;line-height:1.6;max-w-2xl;">
+        ${escapeHtml(meta.description)}
+      </p>
+    </header>
+    <section>
+      <h2 style="font-size:1.1rem;font-family:monospace;font-weight:600;color:#44403c;margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:0.05em;">
+        Published Papers (${categoryArticles.length})
+      </h2>
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+        ${categoryArticles
+          .map(
+            (art) => `<article style="padding:1.5rem;background:#fbfaf8;border:1px solid #eae8e0;border-radius:0.75rem;">
+              <h3 style="font-size:1.3rem;font-weight:600;margin-bottom:0.5rem;">
+                <a href="/article/${encodeURIComponent(art.slug)}" style="color:#1a1a1a;text-decoration:underline;">${escapeHtml(art.title)}</a>
+              </h3>
+              <p style="font-size:0.9rem;color:#57534e;line-height:1.6;margin-bottom:0.75rem;">
+                ${escapeHtml(art.excerpt)}
+              </p>
+              <div style="font-size:0.75rem;font-family:monospace;color:#78716c;">
+                <span>Published: ${new Date(art.publishedAt || art.createdAt || Date.now()).toLocaleDateString()}</span> • <span>${art.readTimeMinutes || 6} min read</span>
+              </div>
+            </article>`
+          )
+          .join("\n")}
+      </div>
+    </section>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectArticle(template: string, article: any): string {
+  const rawMetaTitle = article.seoMetadata?.metaTitle || `${article.title} | YieldNest`;
+  const cleanTitle = rawMetaTitle.length > 58 ? rawMetaTitle.slice(0, 55).trim() + "..." : rawMetaTitle;
+  const title = escapeHtml(cleanTitle);
+  const description = escapeHtml(article.excerpt || "Independent mutual fund research on YieldNest.online.");
+  // Strictly clean canonical URL with NO trailing slash
+  const url = `${CANONICAL_ORIGIN}/article/${encodeURIComponent(article.slug)}`;
+  const datePublished = new Date(article.publishedAt || article.createdAt || Date.now()).toISOString();
+  const dateModified = new Date(article.updatedAt || article.createdAt || Date.now()).toISOString();
+  const catSlug = CATEGORY_NAME_TO_SLUG[article.category] || "fund-comparison";
+  const catUrl = `${CANONICAL_ORIGIN}/category/${catSlug}`;
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "FinancialArticle",
+        "@id": `${url}#article`,
+        "isPartOf": {
+          "@type": "WebPage",
+          "@id": url,
+          "url": url,
+          "name": title,
+        },
+        "headline": article.title,
+        "description": article.excerpt,
+        "url": url,
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": url,
+        },
+        "datePublished": datePublished,
+        "dateModified": dateModified,
+        "author": {
+          "@type": "Organization",
+          "name": "YieldNest Research Desk",
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": `${CANONICAL_ORIGIN}/`,
+        },
+        "articleSection": article.category,
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": article.category,
+            "item": catUrl,
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": article.title,
+            "item": url,
+          },
+        ],
+      },
+    ],
+  });
+
+  const rawKeywords = [
+    article.seoMetadata?.primaryKeyword,
+    ...(Array.isArray(article.tags) ? article.tags : []),
+    ...(Array.isArray(article.seoMetadata?.secondaryKeywords) ? article.seoMetadata.secondaryKeywords : []),
+    article.category,
+    "mutual funds India",
+  ].filter((k): k is string => Boolean(k && typeof k === "string" && k.trim().length > 0));
+
+  const seenKw = new Set<string>();
+  const uniqueKw: string[] = [];
+  for (const item of rawKeywords) {
+    const clean = item.trim();
+    const lower = clean.toLowerCase();
+    if (!seenKw.has(lower)) {
+      seenKw.add(lower);
+      uniqueKw.push(clean);
+    }
+  }
+  const articleKeywords = uniqueKw.join(", ");
+
+  let modified = template;
+  modified = modified.replace(/<title>[\s\S]*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${url}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${url}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:type["'][\s\S]*?>/i, `<meta property="og:type" content="article" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const renderedContent = renderMarkdownToHtml(article.content || "");
+  const formattedDate = new Date(article.publishedAt || article.createdAt || Date.now()).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const ssrBody = `<div class="max-w-4xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <a href="${catUrl}" style="color:#44403c;text-decoration:underline;">${escapeHtml(article.category)}</a> / <span style="color:#1c1917;">${escapeHtml(article.title)}</span>
+    </nav>
+    <article>
+      <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+        <div style="display:inline-block;padding:0.2rem 0.6rem;background:#eae8e0;color:#1c1917;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;">
+          ${escapeHtml(article.category)}
+        </div>
+        <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:1rem;">
+          ${escapeHtml(article.title)}
+        </h1>
+        <div style="font-size:0.8rem;font-family:monospace;color:#78716c;display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+          <span>By <strong>YieldNest Research Desk</strong></span>
+          <span>•</span>
+          <time datetime="${datePublished}">${formattedDate}</time>
+          <span>•</span>
+          <span>${article.readTimeMinutes || 6} min read</span>
+          <span>•</span>
+          <span style="color:#059669;font-weight:600;">AMFI Scheme Verified</span>
+        </div>
+        <p style="font-size:1.05rem;line-height:1.6;color:#57534e;margin-top:1rem;font-style:italic;">
+          ${escapeHtml(article.excerpt)}
+        </p>
+      </header>
+      <div class="article-body">
+        ${renderedContent}
+      </div>
+      <section style="margin-top:2.5rem;padding:1.5rem;background:#fbfaf8;border:1px solid #eae8e0;border-radius:0.75rem;">
+        <h3 style="font-size:1.1rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;">Explore Quantitative Investment Calculators</h3>
+        <p style="font-size:0.85rem;color:#57534e;line-height:1.5;margin-bottom:1rem;">Model compounding math, fee friction, and optimal asset allocation on YieldNest:</p>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;font-size:0.8rem;font-family:monospace;">
+          <a href="/calculator/direct-vs-regular" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Direct vs Regular TER Drag</a>
+          <a href="/calculator/step-up-sip" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Step-Up SIP Calculator</a>
+          <a href="/calculator/cost-of-delay" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Cost of Delay Tax</a>
+          <a href="/calculator/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">SIP vs Lumpsum Comparator</a>
+        </div>
+      </section>
+      ${buildSharedFooterHtml()}
+    </article>
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function buildSitemapXmlString(articles: any[]): string {
+  const today = new Date().toISOString().split("T")[0];
+  const categories = Object.keys(CATEGORY_META);
+  const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
+  const sitemapArticles = articles.filter((art) => !aliasSourceSlugs.has(art.slug));
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>${CANONICAL_ORIGIN}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/faq</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/glossary</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/guides</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/guides/how-to-choose-a-mutual-fund</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/guides/redemption-checklist</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/sip</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/step-up-sip</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/lumpsum</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/swp</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/goal-planner</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/tax-estimator</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/direct-vs-regular</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/cost-of-delay</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/calculators/sip-vs-lumpsum</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/hubs</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+${TOPIC_HUBS.map((h) => `  <url>
+    <loc>${CANONICAL_ORIGIN}/hub/${h.slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`).join("\n")}
+  <url>
+    <loc>${CANONICAL_ORIGIN}/about</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/terms</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+${categories
+  .map(
+    (cat) => `  <url>
+    <loc>${CANONICAL_ORIGIN}/category/${cat}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`
+  )
+  .join("\n")}
+${articles
+  .map((art) => {
+    const rawDate = art.updatedAt || art.publishedAt || today;
+    const lastMod = rawDate.split("T")[0];
+    return `  <url>
+    <loc>${CANONICAL_ORIGIN}/article/${encodeURIComponent(art.slug)}</loc>
+    <lastmod>${lastMod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`;
+  })
+  .join("\n")}
+</urlset>`;
+}
+
+function injectCalculatorPage(template: string, calc: { slug: string; path: string; title: string; description: string; canonical: string }): string {
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": `${calc.canonical}#app`,
+        "name": calc.title,
+        "url": calc.canonical,
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript",
+        "description": calc.description,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "INR",
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${calc.canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Calculators",
+            "item": `${CANONICAL_ORIGIN}/calculators`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": calc.title,
+            "item": calc.canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${calc.title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${calc.description}" />`);
+  const calcKeywords = `${calc.title}, mutual fund calculator, SIP calculator, financial planning India, wealth compounding, AMFI calculator`;
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${calc.canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${calc.title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${calc.description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${calc.canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${calc.title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${calc.description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  let mainBody = "";
+  if (calc.slug === "direct-vs-regular") {
+    mainBody = `
+      <section style="margin-bottom:2.5rem;">
+        <span style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;">Quantitative Fee Drag Simulation</span>
+        <h1 style="font-size:2.2rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;margin-bottom:1rem;">Direct vs Regular Mutual Fund Calculator</h1>
+        <p style="font-size:1.05rem;color:#44403c;line-height:1.6;margin-bottom:1.5rem;">
+          In Indian mutual funds, regular plans include ongoing distributor commissions (typically 0.50% to 1.50% annually) deducted daily from your scheme's Net Asset Value (NAV). Direct plans eliminate this intermediary friction, compounding directly to your terminal corpus.
+        </p>
+        <div style="background:#ffffff;border:1px solid #e5e3dc;border-radius:0.75rem;padding:1.5rem;margin-bottom:2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;">Mathematical Mechanics of the 1% Difference</h2>
+          <p style="font-size:0.9rem;color:#57534e;line-height:1.6;margin-bottom:1rem;">
+            Because mutual fund returns compound exponentially, a 1.00% difference in annual Total Expense Ratio (TER) does not mean a 1% loss in terminal wealth. Over 20 years, a 1% fee difference forfeits approximately 15% to 22% of your entire portfolio corpus.
+          </p>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;font-size:0.85rem;border-collapse:collapse;font-family:monospace;margin-top:1rem;">
+              <thead>
+                <tr style="background:#f5f4ef;border-bottom:2px solid #e5e3dc;text-align:left;">
+                  <th style="padding:0.75rem;">Tenure</th>
+                  <th style="padding:0.75rem;">Total Invested</th>
+                  <th style="padding:0.75rem;">Direct (12.5% Net)</th>
+                  <th style="padding:0.75rem;">Regular (11.5% Net)</th>
+                  <th style="padding:0.75rem;color:#b91c1c;">Wealth Lost to Drag</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #eae8e0;">
+                  <td style="padding:0.75rem;">10 Years</td>
+                  <td style="padding:0.75rem;">₹12,00,000</td>
+                  <td style="padding:0.75rem;">₹24,40,000</td>
+                  <td style="padding:0.75rem;">₹22,90,000</td>
+                  <td style="padding:0.75rem;color:#b91c1c;font-weight:600;">₹1,50,000</td>
+                </tr>
+                <tr style="border-bottom:1px solid #eae8e0;">
+                  <td style="padding:0.75rem;">15 Years</td>
+                  <td style="padding:0.75rem;">₹18,00,000</td>
+                  <td style="padding:0.75rem;">₹53,20,000</td>
+                  <td style="padding:0.75rem;">₹48,10,000</td>
+                  <td style="padding:0.75rem;color:#b91c1c;font-weight:600;">₹5,10,000</td>
+                </tr>
+                <tr style="border-bottom:1px solid #eae8e0;">
+                  <td style="padding:0.75rem;">20 Years</td>
+                  <td style="padding:0.75rem;">₹24,00,000</td>
+                  <td style="padding:0.75rem;">₹1,09,90,000</td>
+                  <td style="padding:0.75rem;">₹96,50,000</td>
+                  <td style="padding:0.75rem;color:#b91c1c;font-weight:600;">₹13,40,000</td>
+                </tr>
+                <tr>
+                  <td style="padding:0.75rem;">25 Years</td>
+                  <td style="padding:0.75rem;">₹30,00,000</td>
+                  <td style="padding:0.75rem;">₹2,21,40,000</td>
+                  <td style="padding:0.75rem;">₹1,87,30,000</td>
+                  <td style="padding:0.75rem;color:#b91c1c;font-weight:600;">₹34,10,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p style="font-size:0.95rem;color:#44403c;line-height:1.6;">
+          Read our in-depth research breakdown: <a href="/article/direct-vs-regular-mutual-funds-charges-commissions-compounding" style="color:#047857;text-decoration:underline;font-weight:600;">Direct vs Regular Mutual Funds: The Compounding Drag of Distributor Commissions</a>.
+        </p>
+      </section>`;
+  } else if (calc.slug === "step-up-sip") {
+    mainBody = `
+      <section style="margin-bottom:2.5rem;">
+        <span style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;">Compounding Acceleration Modeling</span>
+        <h1 style="font-size:2.2rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;margin-bottom:1rem;">Step-Up SIP Compounding Calculator</h1>
+        <p style="font-size:1.05rem;color:#44403c;line-height:1.6;margin-bottom:1.5rem;">
+          A Step-Up SIP (top-up SIP) automatically increases your monthly mutual fund investment by a predetermined percentage (e.g., 5%, 10%, or 15%) each year in sync with your career salary increments.
+        </p>
+        <div style="background:#ffffff;border:1px solid #e5e3dc;border-radius:0.75rem;padding:1.5rem;margin-bottom:2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;">Why Annual Step-Ups Double Your Retirement Corpus</h2>
+          <p style="font-size:0.9rem;color:#57534e;line-height:1.6;margin-bottom:1rem;">
+            A fixed ₹10,000 SIP over 20 years at 12% returns yields ~₹99.9 Lakhs. But stepping up by just 10% annually boosts your corpus to over ₹2.05 Crore — more than double the wealth for a manageable incremental outlay.
+          </p>
+        </div>
+        <p style="font-size:0.95rem;color:#44403c;line-height:1.6;">
+          Explore our strategic guides: <a href="/category/sip-strategies" style="color:#047857;text-decoration:underline;font-weight:600;">SIP Strategies &amp; Compounding Tactics</a>.
+        </p>
+      </section>`;
+  } else if (calc.slug === "cost-of-delay") {
+    mainBody = `
+      <section style="margin-bottom:2.5rem;">
+        <span style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;">The Procrastination Tax</span>
+        <h1 style="font-size:2.2rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;margin-bottom:1rem;">Cost of Delay SIP Calculator</h1>
+        <p style="font-size:1.05rem;color:#44403c;line-height:1.6;margin-bottom:1.5rem;">
+          In compounding mathematics, the money generated in the final years dwarfs the early contributions. Postponing your monthly SIP by even 1 or 2 years cuts off the highest-compounding years from your portfolio horizon.
+        </p>
+        <div style="background:#ffffff;border:1px solid #e5e3dc;border-radius:0.75rem;padding:1.5rem;margin-bottom:2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;">The Penalty of Waiting 1 Year</h2>
+          <p style="font-size:0.9rem;color:#57534e;line-height:1.6;">
+            Waiting 12 months before starting a ₹10,000 monthly SIP costs you only ₹1,20,000 in missed contributions, but costs over ₹12,00,000 to ₹18,00,000 in lost terminal wealth over a 20-year horizon.
+          </p>
+        </div>
+      </section>`;
+  } else if (calc.slug === "sip-vs-lumpsum") {
+    mainBody = `
+      <section style="margin-bottom:2.5rem;">
+        <span style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;">Strategy Comparison</span>
+        <h1 style="font-size:2.2rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;margin-bottom:1rem;">SIP vs Lumpsum Calculator</h1>
+        <p style="font-size:1.05rem;color:#44403c;line-height:1.6;margin-bottom:1.5rem;">
+          Compare systematic monthly investments (SIP) that average out volatility through rupee-cost averaging against a one-time lump-sum allocation deployed immediately into Indian equities.
+        </p>
+        <div style="background:#ffffff;border:1px solid #e5e3dc;border-radius:0.75rem;padding:1.5rem;margin-bottom:2rem;">
+          <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.75rem;">When to Choose SIP vs Lumpsum</h2>
+          <p style="font-size:0.9rem;color:#57534e;line-height:1.6;">
+            Lump-sum deployment mathematically delivers superior returns when markets trend upwards over long horizons, while SIP shields capital against severe short-term corrections.
+          </p>
+        </div>
+      </section>`;
+  } else {
+    mainBody = `
+      <section style="margin-bottom:2.5rem;">
+        <span style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:700;text-transform:uppercase;">Quantitative Simulation Suite</span>
+        <h1 style="font-size:2.4rem;font-weight:700;color:#1a1a1a;margin-top:0.35rem;margin-bottom:1rem;">Mutual Fund Quantitative Calculator Suite</h1>
+        <p style="font-size:1.1rem;color:#44403c;line-height:1.6;margin-bottom:2rem;">
+          Free, mathematically rigorous calculators for Indian mutual fund investors. Model expense ratio drag, annual step-up compounding, the financial cost of delaying investments, and SIP vs lumpsum allocations.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.5rem;margin-bottom:2.5rem;">
+          <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/direct-vs-regular" style="color:#047857;text-decoration:underline;">Direct vs Regular Calculator</a></h2>
+            <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Evaluate the terminal wealth drag caused by distributor trail commissions (0.50% - 1.50% TER differences) over 10 to 30 years.</p>
+          </div>
+          <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/step-up-sip" style="color:#047857;text-decoration:underline;">Step-Up SIP Calculator</a></h2>
+            <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Simulate compounding acceleration when you increase monthly contributions by 5% to 25% each year with your salary hikes.</p>
+          </div>
+          <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/cost-of-delay" style="color:#047857;text-decoration:underline;">Cost of Delay Calculator</a></h2>
+            <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Calculate the compound interest penalty of waiting 6 months, 1 year, or 2 years before initiating your investment program.</p>
+          </div>
+          <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/sip-vs-lumpsum" style="color:#047857;text-decoration:underline;">SIP vs Lumpsum Comparator</a></h2>
+            <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Analyze risk and return trade-offs between a single lump-sum deployment and rupee-cost averaged monthly installments.</p>
+          </div>
+        </div>
+      </section>`;
+  }
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <a href="/calculators" style="color:#44403c;text-decoration:underline;">Calculators</a> / <span style="color:#1c1917;">${escapeHtml(calc.title)}</span>
+    </nav>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;font-size:0.8rem;font-family:monospace;">
+      <a href="/calculators" style="padding:0.4rem 0.8rem;background:${calc.slug === 'calculators' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Suite Hub</a>
+      <a href="/calculator/direct-vs-regular" style="padding:0.4rem 0.8rem;background:${calc.slug === 'direct-vs-regular' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Direct vs Regular</a>
+      <a href="/calculator/step-up-sip" style="padding:0.4rem 0.8rem;background:${calc.slug === 'step-up-sip' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Step-Up SIP</a>
+      <a href="/calculator/cost-of-delay" style="padding:0.4rem 0.8rem;background:${calc.slug === 'cost-of-delay' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Cost of Delay</a>
+      <a href="/calculator/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:${calc.slug === 'sip-vs-lumpsum' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">SIP vs Lumpsum</a>
+    </div>
+    ${mainBody}
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectPlaceholderModulePage(template: string, mod: {
+  slug: string;
+  path: string;
+  title: string;
+  description: string;
+  canonical: string;
+  badge: string;
+  heading: string;
+  intro: string;
+  keywords: string;
+}): string {
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${mod.canonical}#webpage`,
+        "url": mod.canonical,
+        "name": mod.title,
+        "description": mod.description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "url": CANONICAL_ORIGIN,
+          "name": "YieldNest.online",
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${mod.canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": mod.heading,
+            "item": mod.canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${mod.title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${mod.description}" />`);
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${mod.canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${mod.title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${mod.description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${mod.canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${mod.title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${mod.description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">${escapeHtml(mod.heading)}</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#fef3c7;color:#92400e;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        ${escapeHtml(mod.badge)}
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        ${escapeHtml(mod.heading)}
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-w-2xl;">
+        ${escapeHtml(mod.intro)}
+      </p>
+    </header>
+    <div style="padding:2rem;background:#fbfaf8;border:1px solid #eae8e0;border-radius:0.75rem;margin-bottom:2rem;">
+      <h2 style="font-size:1.2rem;font-weight:700;color:#1a1a1a;margin-bottom:0.75rem;">Module In Development</h2>
+      <p style="font-size:0.9rem;color:#57534e;line-height:1.6;margin-bottom:1.5rem;">
+        Coming soon: This educational section is currently being drafted and compliance-verified under our rolling release schedule.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;font-size:0.8rem;font-family:monospace;">
+        <a href="/" style="padding:0.4rem 0.8rem;background:#1a1a1a;color:#ffffff;border-radius:0.35rem;text-decoration:none;">Explore Research Papers</a>
+        <a href="/calculators" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Launch Calculators Suite</a>
+      </div>
+    </div>
+    <div style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;font-size:0.75rem;line-height:1.5;color:#57534e;">
+      <strong>Regulatory Disclaimer:</strong> Mutual fund investments are subject to market risks. Read all scheme-related documents carefully. This site is for education only and is not investment advice. Past performance does not guarantee future returns.
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectFAQPage(template: string): string {
+  const keywordsPath = path.resolve(__dirname, "../src/data/keywords.json");
+  let publishedEntries: any[] = [];
+  try {
+    if (fs.existsSync(keywordsPath)) {
+      const data = JSON.parse(fs.readFileSync(keywordsPath, "utf-8"));
+      publishedEntries = data.filter((k: any) => k.status === "published" && k.answer);
+    }
+  } catch (e) {
+    console.warn("Failed to load keywords.json in prerender:", e);
+  }
+
+  const title = "Frequently Asked Questions (FAQ) | YieldNest";
+  const description = "Answers to common retail investor questions about Indian mutual fund mechanics, taxation, capital safety, and operational rules under SEBI regulations.";
+  const canonical = `${CANONICAL_ORIGIN}/faq`;
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "url": CANONICAL_ORIGIN,
+          "name": "YieldNest.online",
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonical}#faqpage`,
+        "mainEntity": publishedEntries.map((entry: any) => ({
+          "@type": "Question",
+          "name": entry.keyword,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": entry.answer,
+          },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "FAQ Hub",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "mutual fund FAQ, is mutual fund safe, mutual fund tax rules, SIP questions, mutual fund redemption time, SEBI regulations, Direct vs Regular";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const faqItemsHtml = publishedEntries
+    .map(
+      (item: any) => `
+    <article style="margin-bottom:1.5rem;padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+      <div style="font-size:0.7rem;font-family:monospace;text-transform:uppercase;color:#047857;font-weight:600;margin-bottom:0.4rem;">
+        ${escapeHtml(item.cluster)} • ${escapeHtml(item.intent)}
+      </div>
+      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin-bottom:0.75rem;line-height:1.3;">
+        ${escapeHtml(item.keyword)}
+      </h2>
+      ${
+        item.variants && item.variants.length > 0
+          ? `<div style="font-size:0.75rem;color:#78716c;margin-bottom:0.75rem;font-family:monospace;">
+              Also asked as: ${item.variants.map((v: string) => `"${escapeHtml(v)}"`).join(", ")}
+            </div>`
+          : ""
+      }
+      <p style="font-size:0.9rem;line-height:1.6;color:#44403c;margin:0;">
+        ${escapeHtml(item.answer)}
+      </p>
+    </article>`
+    )
+    .join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">FAQ Hub</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Verified Educational Hub
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        Mutual Fund Frequently Asked Questions (FAQ)
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        Evidence-backed answers to the most frequent retail investor inquiries regarding Indian mutual fund mechanics, taxation, capital safety, and operational rules under SEBI regulations. Never recommends specific schemes.
+      </p>
+    </header>
+    <div class="faq-list">
+      ${faqItemsHtml}
+    </div>
+    <div style="margin-top:2rem;padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;font-size:0.75rem;line-height:1.5;color:#57534e;">
+      <strong>Regulatory Disclaimer:</strong> Mutual fund investments are subject to market risks. Read all scheme-related documents carefully. This site is for education only and is not investment advice. Past performance does not guarantee future returns.
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectGlossaryPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/glossary`;
+  const title = "Mutual Fund Glossary: Key Terms & Definitions | YieldNest";
+  const description = "Comprehensive glossary of over 50 essential Indian mutual fund terms including NAV, TER, ISIN, CAN, IDCW, exit loads, SEBI, and AMFI regulations.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "DefinedTermSet",
+        "@id": `${canonical}#terms`,
+        "name": "Indian Mutual Fund Investor Educational Glossary",
+        "description": description,
+        "url": canonical,
+        "hasDefinedTerm": GLOSSARY_TERMS.map((term) => ({
+          "@type": "DefinedTerm",
+          "@id": `${canonical}#${term.id}`,
+          "name": term.term,
+          "description": term.definition,
+          "termCode": term.abbreviation || term.id,
+          "url": `${canonical}#${term.id}`,
+          "inDefinedTermSet": `${canonical}#terms`,
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": `${CANONICAL_ORIGIN}/`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Glossary",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "mutual fund glossary, NAV meaning, TER meaning, ISIN mutual fund, CAN mutual fund, IDCW meaning, exit load, SEBI regulations";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const termsHtml = GLOSSARY_TERMS.map((item) => `
+    <article id="${item.id}" style="margin-bottom:1.25rem;padding:1.25rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+        <span style="font-size:0.7rem;font-family:monospace;text-transform:uppercase;color:#047857;font-weight:600;">
+          ${escapeHtml(item.cluster)}
+        </span>
+        <a href="#${item.id}" style="font-size:0.75rem;font-family:monospace;color:#a8a29e;text-decoration:none;">#${item.id}</a>
+      </div>
+      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;line-height:1.3;">
+        ${escapeHtml(item.term)}
+      </h2>
+      <p style="font-size:0.9rem;line-height:1.6;color:#44403c;margin:0;">
+        ${escapeHtml(item.definition)}
+      </p>
+    </article>
+  `).join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Glossary</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Authoritative Regulatory Glossary
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        Mutual Fund Glossary: Key Terms & Definitions
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        An authoritative, jargon-free reference dictionary explaining essential technical metrics, regulatory abbreviations, and valuation concepts for Indian mutual fund investors.
+      </p>
+    </header>
+    <div class="glossary-list">
+      ${termsHtml}
+    </div>
+    <div style="margin-top:2rem;padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;font-size:0.75rem;line-height:1.5;color:#57534e;">
+      <strong>Regulatory Disclaimer:</strong> Mutual fund investments are subject to market risks. Read all scheme-related documents carefully. This site is for education only and is not investment advice. Past performance does not guarantee future returns.
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectTopicHub(template: string, hub: TopicHubData, articles: any[]): string {
+  const canonical = `${CANONICAL_ORIGIN}/hub/${hub.slug}`;
+  const title = hub.metaTitle;
+  const description = hub.metaDescription;
+
+  const relatedArticles = articles.filter(
+    (a) => a.status === "published" && hub.matchedArticleSlugs.includes(a.slug)
+  );
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: title,
+        description: description,
+        publisher: {
+          "@type": "Organization",
+          name: "YieldNest",
+          url: CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Topic Hubs",
+            item: `${CANONICAL_ORIGIN}/hubs`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: hub.title,
+            item: canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const articlesHtml = relatedArticles.map((art) => `
+    <article style="margin-bottom:1.5rem;padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+      <span style="font-size:0.7rem;font-family:monospace;text-transform:uppercase;color:#047857;font-weight:600;">${escapeHtml(art.category)}</span>
+      <h2 style="font-size:1.2rem;font-weight:700;margin:0.5rem 0;line-height:1.3;">
+        <a href="/article/${art.slug}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(art.title)}</a>
+      </h2>
+      <p style="font-size:0.9rem;line-height:1.6;color:#57534e;margin-bottom:1rem;">${escapeHtml(art.excerpt)}</p>
+      <a href="/article/${art.slug}" style="font-size:0.8rem;font-family:monospace;color:#047857;font-weight:600;text-decoration:none;">Read Research Paper &rarr;</a>
+    </article>
+  `).join("\n");
+
+  const faqsHtml = hub.faqs.map((f) => `
+    <div style="margin-bottom:1rem;padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;">
+      <h3 style="font-size:1rem;font-weight:700;color:#1a1a1a;margin-bottom:0.4rem;">${escapeHtml(f.question)}</h3>
+      <p style="font-size:0.85rem;line-height:1.6;color:#44403c;margin:0;">${escapeHtml(f.answer)}</p>
+    </div>
+  `).join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <a href="/hubs" style="color:#44403c;text-decoration:underline;">Topic Hubs</a> / <span style="color:#1c1917;">${escapeHtml(hub.title)}</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        ${escapeHtml(hub.badge)}
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        ${escapeHtml(hub.title)}
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        ${escapeHtml(hub.intro)}
+      </p>
+    </header>
+    <section style="margin-bottom:2rem;">
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:1rem;color:#1a1a1a;">Research Papers in this Cluster</h2>
+      ${articlesHtml || "<p>Explore foundational research notes.</p>"}
+    </section>
+    <section style="margin-bottom:2rem;">
+      <h2 style="font-size:1.4rem;font-weight:700;margin-bottom:1rem;color:#1a1a1a;">Regulatory FAQs</h2>
+      ${faqsHtml}
+    </section>
+    <div style="margin-top:2rem;padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;font-size:0.75rem;line-height:1.5;color:#57534e;">
+      <strong>Regulatory Disclaimer:</strong> Mutual fund investments are subject to market risks. Read all scheme-related documents carefully. This site is for education only and is not investment advice.
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectTopicHubsIndex(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/hubs`;
+  const title = "Mutual Fund Topic Hubs: Systematic Knowledge Clusters | YieldNest";
+  const description = "Explore our comprehensive editorial knowledge hubs organized by core investment clusters: Basics, Safety & Risk, Tax & ELSS, Fees, Redemption, SIP, and Comparisons.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: title,
+        description: description,
+        publisher: {
+          "@type": "Organization",
+          name: "YieldNest",
+          url: CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Topic Hubs",
+            item: canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "mutual fund topics, mutual fund clusters, SEBI investment guide, AMFI topic hubs, mutual fund basics";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const hubsHtml = TOPIC_HUBS.map((h) => `
+    <div style="margin-bottom:1.5rem;padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+      <span style="font-size:0.7rem;font-family:monospace;text-transform:uppercase;color:#047857;font-weight:600;">${escapeHtml(h.badge)}</span>
+      <h2 style="font-size:1.3rem;font-weight:700;margin:0.5rem 0;line-height:1.3;">
+        <a href="/hub/${h.slug}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(h.title)}</a>
+      </h2>
+      <p style="font-size:0.9rem;line-height:1.6;color:#57534e;margin-bottom:1rem;">${escapeHtml(h.intro)}</p>
+      <a href="/hub/${h.slug}" style="font-size:0.8rem;font-family:monospace;color:#047857;font-weight:600;text-decoration:none;">Explore ${escapeHtml(h.title)} Hub &rarr;</a>
+    </div>
+  `).join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Topic Hubs</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Authoritative Topic Hubs
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        Mutual Fund Topic Hubs
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        ${escapeHtml(description)}
+      </p>
+    </header>
+    <div>
+      ${hubsHtml}
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectGuidesIndex(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/guides`;
+  const title = "Mutual Fund Investor Guides & Educational Pillars | YieldNest";
+  const description = "Objective, evidence-backed educational guides and interactive frameworks designed to help Indian retail investors make disciplined decisions. Strictly category-focused and aligned with SEBI regulations.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Guides",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "mutual fund guides, how to choose mutual funds, mutual fund redemption checklist, SEBI categories, direct mutual funds";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Guides</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Authoritative Investor Guides
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        Mutual Fund Investor Guides & Educational Pillars
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        Objective, evidence-backed educational guides and interactive frameworks designed to help Indian retail investors make disciplined decisions. Strictly category-focused, mathematically grounded, and aligned with SEBI regulations.
+      </p>
+    </header>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:1.5rem;margin-bottom:2rem;">
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#047857;text-transform:uppercase;font-weight:600;">Interactive Due Diligence</span>
+        <h2 style="font-size:1.3rem;font-weight:700;margin:0.5rem 0;line-height:1.3;">
+          <a href="/guides/how-to-choose-a-mutual-fund" style="color:#1a1a1a;text-decoration:none;">How to Choose a Mutual Fund (10-Point Checklist & Quiz)</a>
+        </h2>
+        <p style="font-size:0.875rem;line-height:1.6;color:#57534e;margin-bottom:1rem;">
+          Run through 10 quantitative checks before committing capital: verify rolling returns, downside capture ratio, Direct vs Regular expense drag, and AUM liquidity stress. Includes a 5-step Goal & Risk-Profile Quiz that outputs official SEBI fund categories without naming commercial schemes.
+        </p>
+        <a href="/guides/how-to-choose-a-mutual-fund" style="font-size:0.8rem;font-family:monospace;color:#047857;font-weight:600;text-decoration:none;">Launch Checklist & Quiz &rarr;</a>
+      </div>
+      <div style="background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;padding:1.5rem;">
+        <span style="font-size:0.7rem;font-family:monospace;color:#0369a1;text-transform:uppercase;font-weight:600;">Printable Operational Audit</span>
+        <h2 style="font-size:1.3rem;font-weight:700;margin:0.5rem 0;line-height:1.3;">
+          <a href="/guides/redemption-checklist" style="color:#1a1a1a;text-decoration:none;">Printable Mutual Fund Redemption Checklist</a>
+        </h2>
+        <p style="font-size:0.875rem;line-height:1.6;color:#57534e;margin-bottom:1rem;">
+          A formal 12-step pre-redemption verification sheet. Avoid costly exit load traps, comply with ELSS 36-month lock-in rules per installment, optimize LTCG ₹1.25L annual exemptions under Section 112A, and verify payout bank account details prior to submission.
+        </p>
+        <a href="/guides/redemption-checklist" style="font-size:0.8rem;font-family:monospace;color:#0369a1;font-weight:600;text-decoration:none;">Open Printable Checklist &rarr;</a>
+      </div>
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectHowToChooseGuide(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/guides/how-to-choose-a-mutual-fund`;
+  const title = "How to Choose a Mutual Fund: 10-Point Checklist & Category Quiz | YieldNest";
+  const description = "Interactive pre-investment checklist and goal/risk-profile evaluation quiz mapping your horizon to SEBI fund categories with structural rationale and risks.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "HowTo",
+        "@id": `${canonical}#howto`,
+        "name": "How to Choose a Mutual Fund: 10-Point Pre-Investment Due Diligence",
+        "description": description,
+        "step": DUE_DILIGENCE_CHECKLIST.map((item, index) => ({
+          "@type": "HowToStep",
+          "position": index + 1,
+          "name": item.title,
+          "itemListElement": [
+            {
+              "@type": "HowToDirection",
+              "text": item.actionableStep,
+            },
+          ],
+        })),
+      },
+      {
+        "@type": "Article",
+        "@id": `${canonical}#article`,
+        "headline": title,
+        "description": description,
+        "url": canonical,
+        "author": {
+          "@type": "Organization",
+          "name": "YieldNest Research Desk",
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Guides",
+            "item": `${CANONICAL_ORIGIN}/guides`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "How to Choose a Mutual Fund",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "how to choose a mutual fund, mutual fund checklist, fund category quiz, SEBI mutual fund categories, mutual fund due diligence";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const checklistHtml = DUE_DILIGENCE_CHECKLIST.map((item, i) => `
+    <article style="margin-bottom:1.25rem;padding:1.25rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
+      <div style="font-size:0.75rem;font-family:monospace;color:#047857;font-weight:600;text-transform:uppercase;">
+        Check ${i + 1} &bull; ${escapeHtml(item.categoryLabel)}
+      </div>
+      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin:0.4rem 0;">
+        ${escapeHtml(item.title)}
+      </h2>
+      <p style="font-size:0.875rem;line-height:1.6;color:#44403c;margin-bottom:0.75rem;">
+        ${escapeHtml(item.shortDesc)}
+      </p>
+      <div style="background:#f4f2eb;padding:0.75rem;border-radius:0.5rem;font-size:0.8rem;line-height:1.5;color:#292524;">
+        <strong>Action Step:</strong> ${escapeHtml(item.actionableStep)}
+      </div>
+    </article>
+  `).join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <a href="/guides" style="color:#44403c;text-decoration:underline;">Guides</a> / <span style="color:#1c1917;">How to Choose a Mutual Fund</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#d1fae5;color:#065f46;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Pre-Investment Due Diligence
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        How to Choose a Mutual Fund: 10-Point Checklist &amp; Category Evaluation
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        An evidence-backed educational guide featuring an interactive pre-investment due diligence checklist and a goal-horizon evaluation engine that maps your profile to official SEBI fund categories without endorsing specific commercial schemes.
+      </p>
+    </header>
+    <section style="margin-bottom:2rem;">
+      <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1rem;">10-Point Pre-Investment Checklist</h2>
+      ${checklistHtml}
+    </section>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectRedemptionChecklistPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/guides/redemption-checklist`;
+  const title = "Printable Mutual Fund Redemption Checklist | YieldNest";
+  const description = "A printable 12-step pre-redemption verification audit covering exit loads, ELSS 3-year lock-ins, Section 112A capital gains tax, and SEBI cut-off times.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "HowTo",
+        "@id": `${canonical}#howto`,
+        "name": "Mutual Fund Redemption Checklist: 12 Pre-Flight Safeguards",
+        "description": description,
+        "step": REDEMPTION_CHECKLIST.map((item, index) => ({
+          "@type": "HowToStep",
+          "position": index + 1,
+          "name": item.title,
+          "itemListElement": [
+            {
+              "@type": "HowToDirection",
+              "text": item.instruction,
+            },
+          ],
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Guides",
+            "item": `${CANONICAL_ORIGIN}/guides`,
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Redemption Checklist",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  const keywords = "mutual fund redemption checklist, printable mutual fund checklist, exit load mutual funds, ELSS lock in rules, capital gains tax redemption";
+    modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const itemsHtml = REDEMPTION_CHECKLIST.map((item) => `
+    <div style="margin-bottom:1rem;padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;">
+      <div style="font-size:0.75rem;font-family:monospace;color:#0284c7;font-weight:600;text-transform:uppercase;">
+        Step ${item.itemNumber} &bull; ${escapeHtml(item.phaseTitle)}
+      </div>
+      <h3 style="font-size:1.05rem;font-weight:700;color:#1a1a1a;margin:0.3rem 0;">
+        ${escapeHtml(item.title)}
+      </h3>
+      <p style="font-size:0.875rem;line-height:1.5;color:#44403c;margin:0 0 0.5rem 0;">
+        ${escapeHtml(item.instruction)}
+      </p>
+      <div style="font-size:0.75rem;line-height:1.4;color:#78716c;">
+        <strong>Regulatory Context:</strong> ${escapeHtml(item.regulatoryDetail)}
+      </div>
+    </div>
+  `).join("\n");
+
+  const ssrBody = `<div class="max-w-5xl mx-auto px-4 py-8 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <a href="/guides" style="color:#44403c;text-decoration:underline;">Guides</a> / <span style="color:#1c1917;">Redemption Checklist</span>
+    </nav>
+    <header style="margin-bottom:2rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.2rem 0.6rem;background:#e0f2fe;color:#0369a1;border-radius:0.25rem;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;font-family:monospace;">
+        Printable Operational Checklist
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:0.75rem;">
+        Printable Mutual Fund Redemption Checklist
+      </h1>
+      <p style="font-size:1rem;line-height:1.6;color:#57534e;max-width:48rem;">
+        A comprehensive 12-step pre-redemption verification checklist covering exit loads, ELSS 36-month lock-ins, Section 112A capital gains tax, SEBI cut-off times, and payout bank validation.
+      </p>
+    </header>
+    <div>
+      ${itemsHtml}
+    </div>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectAboutPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/about`;
+  const title = "About Us | YieldNest – Independent Mutual Fund Research & Analytics";
+  const description = "Learn about YieldNest.online: who we are, for whom this site is built, why we exist, what we do, and how our independent AMFI-backed analytics help Indian mutual fund investors.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-4xl mx-auto px-4 py-12 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">About Us</span>
+    </nav>
+    <header style="margin-bottom:2.5rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:0.75rem;font-family:monospace;font-weight:600;margin-bottom:1rem;">
+        100% Conflict-Free &bull; Zero Brokerage &bull; Independent Research Desk
+      </div>
+      <h1 style="font-size:2.5rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:1rem;">About YieldNest</h1>
+      <p style="font-size:1.15rem;color:#57534e;line-height:1.6;">
+        Independent quantitative research, unbiased fund category comparisons, and free compounding calculators for Indian mutual fund investors.
+      </p>
+    </header>
+    <article style="line-height:1.8;color:#292524;font-size:1rem;">
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">For Whom Is YieldNest Built?</h2>
+      <p>YieldNest is designed for long-term retail and DIY investors in India who want institutional-grade analytical clarity without distributor spin or marketing hype. From beginners launching their first SIP to experienced wealth builders managing multi-crore portfolios, YieldNest provides objective data, rolling returns, and evidence-based guidance.</p>
+      
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">Why Does YieldNest Exist?</h2>
+      <p>Millions of Indian mutual fund investors remain in high-cost Regular plans, unknowingly losing 0.50% to 1.25% of their total wealth every year to distributor trail commissions. YieldNest was built to eliminate this wealth drain and provide conflict-free research backed by official AMFI and SEBI data disclosures.</p>
+      
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">What We Do &amp; How We Help</h2>
+      <p>We provide quantitative fund comparisons, 10-20-30 year expense ratio drag simulations, 10 client-side financial calculators, 7 authoritative topic hubs, and jargon-free definitions for over 50 mutual fund terms.</p>
+
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">Regulatory Transparency</h2>
+      <p>YieldNest.online is an educational, analytical, and informational platform. We are not registered with SEBI as an Investment Adviser, Research Analyst, or Portfolio Manager. We do not distribute mutual funds, earn commissions, or accept sponsored placements. Mutual fund investments are subject to market risks. Read all scheme-related documents carefully.</p>
+    </article>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+function injectTermsPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/terms`;
+  const title = "Terms & Conditions | YieldNest.online";
+  const description = "Official terms of use, legal notices, SEBI statutory disclaimers, and user agreements for YieldNest.online educational research platform.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Terms & Conditions",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-4xl mx-auto px-4 py-12 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Terms &amp; Conditions</span>
+    </nav>
+    <header style="margin-bottom:2.5rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:0.75rem;font-family:monospace;font-weight:600;margin-bottom:1rem;">
+        Legal Notice &bull; SEBI Disclaimers &bull; Last Updated: October 2026
+      </div>
+      <h1 style="font-size:2.5rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:1rem;">Terms &amp; Conditions of Use</h1>
+      <p style="font-size:1.15rem;color:#57534e;line-height:1.6;">
+        Please read these Terms carefully before accessing or using YieldNest.online. By accessing the site, you agree to these terms.
+      </p>
+    </header>
+    <article style="line-height:1.8;color:#292524;font-size:1rem;">
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">1. Nature of Service: Educational &amp; Research Only</h2>
+      <p>YieldNest.online is an educational, analytical, and informational resource. We are not registered with the Securities and Exchange Board of India (SEBI) as an Investment Adviser, Research Analyst, or Portfolio Manager. Nothing on this website constitutes financial, investment, legal, or tax advice.</p>
+      
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">2. Statutory Risk Warning</h2>
+      <p>Mutual fund investments are subject to market risks. Please read all scheme-related documents carefully before investing. Historical performance and rolling returns are strictly illustrative and do not predict future returns.</p>
+      
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">3. No Financial Advisory or Intermediation</h2>
+      <p>YieldNest does not execute mutual fund transactions, accept deposits, manage investor capital, or recommend specific securities. We do not receive distributor trail commissions or transaction fees.</p>
+
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">4. Calculator &amp; Data Disclaimer</h2>
+      <p>Calculators, projections, and simulations provided on this website are for educational illustration only. Actual investment outcomes depend on market movements, tax rates, expense ratios, and individual investor circumstances.</p>
+    </article>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
+export function buildLlmsTxtString(articles: any[]): string {
+  const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
+  const validArticles = articles.filter((a) => !aliasSourceSlugs.has(a.slug));
+
+  let out = `# YieldNest.online\n\n> Independent Mutual Fund Research & Analytics Platform for Indian Equity & Debt Schemes.\n\nYieldNest.online provides independent, quantitative, data-driven research on Indian Mutual Funds. Our articles analyze 3-year and 5-year rolling returns, downside capture ratios, standard deviation, portfolio overlap, expense ratio (TER) compounding drag, and AMFI India liquidity stress test disclosures.\n\nWe are strictly an investor education and quantitative research publication. Not registered with SEBI or AMFI; no financial advisory services, distributor commissions, or solicitation.\n\n## Core Research Articles\n\n`;
+
+  for (const art of validArticles) {
+    const cleanExcerpt = (art.excerpt || "").replace(/\\n+/g, " ").trim();
+    out += `- [${art.title}](${CANONICAL_ORIGIN}/article/${art.slug}): ${cleanExcerpt}\n`;
+  }
+
+  out += `\n## Research Categories\n
+- [Fund Comparison](${CANONICAL_ORIGIN}/category/fund-comparison): Side-by-side quantitative comparisons of peer mutual fund schemes.
+- [Performance Analysis](${CANONICAL_ORIGIN}/category/performance-analysis): Rolling return analysis, factor exposures, and risk-adjusted metrics.
+- [Market Trends](${CANONICAL_ORIGIN}/category/market-trends): AMFI inflows, SIP book trajectories, and macro liquidity trends.
+- [Category Deep-Dive](${CANONICAL_ORIGIN}/category/category-deep-dive): Deep dives into Flexi Cap, Small Cap, Large & Mid Cap, and Index fund universes.
+- [SIP Strategies](${CANONICAL_ORIGIN}/category/sip-strategies): Systematic investment planning tactics, step-up SIP compounding, and direct plan optimization.
+
+## Quantitative Calculators Suite
+
+- [Quantitative Calculators Hub](${CANONICAL_ORIGIN}/calculators): Interactive suite of mathematical tools for Indian mutual fund investors.
+- [SIP Compounding Calculator](${CANONICAL_ORIGIN}/calculators/sip): Monthly SIP wealth compounding forecaster with year-by-year amortization.
+- [Step-Up SIP Calculator](${CANONICAL_ORIGIN}/calculators/step-up-sip): Annual top-up compounding simulator linked to appraisal increments.
+- [Lumpsum Investment Calculator](${CANONICAL_ORIGIN}/calculators/lumpsum): One-time mutual fund compounding and tax calculator.
+- [SWP Longevity Calculator](${CANONICAL_ORIGIN}/calculators/swp): Systematic Withdrawal Plan monthly cash flow and corpus depletion model.
+- [Goal Planner Calculator](${CANONICAL_ORIGIN}/calculators/goal-planner): Inflation-adjusted target cost and required monthly SIP calculator.
+- [Capital Gains Tax Estimator](${CANONICAL_ORIGIN}/calculators/tax-estimator): Equity LTCG, STCG, Section 112A exemption, and debt taxation calculator.
+- [Direct vs Regular Plan Fee Calculator](${CANONICAL_ORIGIN}/calculators/direct-vs-regular): Measure wealth lost to distributor commissions and TER drag over 10-30 years.
+- [Cost of Delay Calculator](${CANONICAL_ORIGIN}/calculators/cost-of-delay): Compound interest penalty of waiting 6 months, 1 year, or 2 years to start an SIP.
+- [SIP vs Lumpsum Comparator](${CANONICAL_ORIGIN}/calculators/sip-vs-lumpsum): Strategy comparator evaluating rupee-cost averaging against upfront capital deployment.
+
+## Authoritative Topic Hubs
+
+- [Topic Hubs Directory](${CANONICAL_ORIGIN}/hubs): Knowledge clusters organized around foundational mutual fund pillars.
+- [Basics & Fundamentals Hub](${CANONICAL_ORIGIN}/hub/basics): Asset pooling, AMC governance, trustees, NAV valuation, and folio setup.
+- [Safety & Risk Architecture Hub](${CANONICAL_ORIGIN}/hub/safety-and-risk): SEBI riskometers, AMC solvency protections, and liquidity stress tests.
+- [Taxation & ELSS Hub](${CANONICAL_ORIGIN}/hub/tax-and-elss): Section 112A equity LTCG, debt fund slab taxation, and ELSS lock-in mechanics.
+- [Fees & TER Drag Hub](${CANONICAL_ORIGIN}/hub/fees): Total Expense Ratio caps, Direct vs Regular plan compounding divergence, and trail commissions.
+- [Redemption & Settlement Hub](${CANONICAL_ORIGIN}/hub/redemption): 3:00 PM SEBI cut-off timings, T+1/T+2 bank crediting, and SWP decumulation.
+- [SIP, SWP & STP Strategies Hub](${CANONICAL_ORIGIN}/hub/sip-swp-stp): Systematic investment, automated discipline, and step-up compounding.
+- [Comparisons & Active vs Passive Hub](${CANONICAL_ORIGIN}/hub/comparisons): SPIVA benchmarks, active alpha decay, and alternatives (FD, PPF, Gold, NPS).
+
+## Educational Investor Guides
+
+- [Investor Guides Hub](${CANONICAL_ORIGIN}/guides): Objective frameworks for retail portfolio construction.
+- [How to Choose a Mutual Fund (10-Point Checklist & Quiz)](${CANONICAL_ORIGIN}/guides/how-to-choose-a-mutual-fund): Pre-investment due diligence framework with category matching quiz.
+- [Printable Redemption Checklist](${CANONICAL_ORIGIN}/guides/redemption-checklist): 12-step pre-redemption verification audit covering exit loads, ELSS lock-ins, and tax cut-offs.
+
+## Reference & Transparency
+
+- [Frequently Asked Questions (FAQ)](${CANONICAL_ORIGIN}/faq): Answers to 1,300+ retail mutual fund inquiries across safety, tax, and mechanics.
+- [Mutual Fund Glossary](${CANONICAL_ORIGIN}/glossary): Comprehensive dictionary defining NAV, TER, ISIN, CAN, IDCW, exit loads, and SEBI terms.
+- [About Us](${CANONICAL_ORIGIN}/about): Independent editorial mandate, research methodology, and conflict-free policy.
+- [Terms & Conditions](${CANONICAL_ORIGIN}/terms): Legal terms, user agreement, and SEBI statutory educational disclaimers.
+
+## Full Documentation Archive
+
+- [Full Content Archive](${CANONICAL_ORIGIN}/llms-full.txt): Complete unabridged text of all research papers for AI model synthesis.
+`;
+
+  return out;
+}
+
+export function buildLlmsFullString(articles: any[]): string {
+  const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
+  const validArticles = articles.filter((a) => !aliasSourceSlugs.has(a.slug));
+
+  let out = `# YieldNest.online - Complete Research Library Archive\n\n> Comprehensive collection of independent mutual fund quantitative analyses, rolling return studies, expense analyses, and regulatory guides.\n\n---\n`;
+
+  for (const art of validArticles) {
+    out += `\n## Article: ${art.title}\n`;
+    out += `Canonical URL: ${CANONICAL_ORIGIN}/article/${art.slug}\n`;
+    out += `Category: ${art.category || "Research"}\n`;
+    out += `Read Time: ${art.readTimeMinutes || 6} mins\n\n`;
+    out += `### Executive Summary\n${(art.excerpt || "").trim()}\n\n`;
+    if (art.content) {
+      out += `### Full Content & Analytical Findings\n\n${art.content.trim()}\n\n`;
+    }
+    out += `---\n`;
+  }
+
+  return out;
+}
+
+async function runPrerender() {
+  console.log("🚀 [Prerender] Starting static HTML generation for Vercel/production deployment...");
+
+  const baseIndexPath = path.join(distDir, "index.html");
+  if (!fs.existsSync(baseIndexPath)) {
+    console.error("❌ [Prerender] dist/index.html not found! Run vite build first.");
+    process.exit(1);
+  }
+
+  let baseHtml = fs.readFileSync(baseIndexPath, "utf-8");
+
+  // Keep standard stylesheet link for fast CDN caching and optimal text-to-HTML ratio
+  console.log("  ✓ Using external stylesheet link to ensure lean HTML and optimal text-to-HTML ratio");
+
+  const articles = await loadAllArticles();
+  console.log(`📑 [Prerender] Loaded ${articles.length} published research articles.`);
+
+  // 1. Prerender Homepage
+  const homepageHtml = injectHomepage(baseHtml, articles);
+  fs.writeFileSync(baseIndexPath, homepageHtml, "utf-8");
+  console.log("  ✓ Prerendered dist/index.html (Canonical: https://www.yieldnest.online/)");
+
+  // 2. Prerender Category Pages
+  for (const catSlug of Object.keys(CATEGORY_META)) {
+    const catHtml = injectCategory(baseHtml, catSlug, articles);
+    const catDir = path.join(distDir, "category", catSlug);
+    fs.mkdirSync(catDir, { recursive: true });
+
+    // Both dist/category/catSlug.html (for cleanUrls) and dist/category/catSlug/index.html
+    fs.writeFileSync(path.join(distDir, "category", `${catSlug}.html`), catHtml, "utf-8");
+    fs.writeFileSync(path.join(catDir, "index.html"), catHtml, "utf-8");
+    console.log(`  ✓ Prerendered /category/${catSlug} (Canonical: https://www.yieldnest.online/category/${catSlug})`);
+  }
+
+  // 3. Prerender Article Pages
+  for (const art of articles) {
+    const artHtml = injectArticle(baseHtml, art);
+    const artDir = path.join(distDir, "article", art.slug);
+    fs.mkdirSync(artDir, { recursive: true });
+
+    // Both dist/article/slug.html (for cleanUrls) and dist/article/slug/index.html
+    fs.writeFileSync(path.join(distDir, "article", `${art.slug}.html`), artHtml, "utf-8");
+    fs.writeFileSync(path.join(artDir, "index.html"), artHtml, "utf-8");
+    console.log(`  ✓ Prerendered /article/${art.slug} (Canonical: https://www.yieldnest.online/article/${art.slug})`);
+  }
+
+  // 3b. Prerender Calculators Suite Hub & Individual Dedicated Calculator Pages
+  const CALCULATOR_PAGES = [
+    {
+      slug: "calculators",
+      path: "calculators",
+      title: "Mutual Fund Calculators Suite | YieldNest",
+      description: "Free Indian mutual fund calculators. Calculate Direct vs Regular TER drag, step-up SIP compounding, procrastination delay costs, and SIP vs lumpsum returns.",
+      canonical: "https://www.yieldnest.online/calculators",
+    },
+    {
+      slug: "sip",
+      path: "calculator/sip",
+      title: "SIP Calculator: Mutual Fund Wealth Compounding | YieldNest",
+      description: "Calculate mutual fund SIP compounding, future maturity value, and post-tax returns in India with yearly amortization table.",
+      canonical: "https://www.yieldnest.online/calculators/sip",
+    },
+    {
+      slug: "lumpsum",
+      path: "calculator/lumpsum",
+      title: "Lumpsum Calculator: One-Time Mutual Fund Compounding | YieldNest",
+      description: "Calculate multi-year compounded returns and capital gains tax on one-time lumpsum mutual fund investments in India.",
+      canonical: "https://www.yieldnest.online/calculators/lumpsum",
+    },
+    {
+      slug: "swp",
+      path: "calculator/swp",
+      title: "SWP Calculator: Systematic Withdrawal Plan & Longevity | YieldNest",
+      description: "Simulate systematic monthly withdrawals from your mutual fund corpus. Calculate total withdrawals, final balance, and portfolio depletion horizon with monthly compounding.",
+      canonical: "https://www.yieldnest.online/calculators/swp",
+    },
+    {
+      slug: "goal-planner",
+      path: "calculator/goal-planner",
+      title: "Goal Planner Calculator: Inflation-Adjusted Target & Required SIP | YieldNest",
+      description: "Calculate inflation-adjusted future target cost and the required monthly mutual fund SIP to achieve life goals like child education, home purchase, and retirement.",
+      canonical: "https://www.yieldnest.online/calculators/goal-planner",
+    },
+    {
+      slug: "tax-estimator",
+      path: "calculator/tax-estimator",
+      title: "Mutual Fund Tax Estimator: Capital Gains & Net Proceeds | YieldNest",
+      description: "Calculate capital gains tax, holding period classification, Section 112A exemption, and net realization proceeds on mutual fund redemptions in India under Finance Act 2024.",
+      canonical: "https://www.yieldnest.online/calculators/tax-estimator",
+    },
+    {
+      slug: "direct-vs-regular",
+      path: "calculator/direct-vs-regular",
+      title: "Direct vs Regular Fund Calculator | YieldNest",
+      description: "Calculate how much wealth you lose to distributor commissions and Total Expense Ratio (TER) drag over your SIP tenure in Indian mutual funds.",
+      canonical: "https://www.yieldnest.online/calculators/direct-vs-regular",
+    },
+    {
+      slug: "step-up-sip",
+      path: "calculator/step-up-sip",
+      title: "Step-Up SIP Compounding Calculator | YieldNest",
+      description: "Simulate how increasing your monthly SIP by 5% to 25% each year accelerates your mutual fund corpus. Calculate extra wealth generated by annual step-ups.",
+      canonical: "https://www.yieldnest.online/calculators/step-up-sip",
+    },
+    {
+      slug: "cost-of-delay",
+      path: "calculator/cost-of-delay",
+      title: "Cost of Delay SIP Calculator | YieldNest",
+      description: "Find out how much money you lose by delaying your mutual fund SIP by 6 months, 1 year, or 2 years. Calculate the compound interest penalty of waiting.",
+      canonical: "https://www.yieldnest.online/calculators/cost-of-delay",
+    },
+    {
+      slug: "sip-vs-lumpsum",
+      path: "calculator/sip-vs-lumpsum",
+      title: "SIP vs Lumpsum Calculator | YieldNest",
+      description: "Compare mutual fund returns between a one-time lumpsum investment and a staggered monthly SIP over the same time horizon with delta analysis.",
+      canonical: "https://www.yieldnest.online/calculators/sip-vs-lumpsum",
+    },
+  ];
+
+  for (const calc of CALCULATOR_PAGES) {
+    const pageHtml = injectCalculatorPage(baseHtml, calc);
+
+    // Write primary path (e.g. /calculator/direct-vs-regular)
+    const targetDir = path.join(distDir, calc.path);
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, `${calc.path}.html`), pageHtml, "utf-8");
+    fs.writeFileSync(path.join(targetDir, "index.html"), pageHtml, "utf-8");
+
+    // Also write plural alias (e.g. /calculators/direct-vs-regular) if it begins with calculator/
+    if (calc.path.startsWith("calculator/")) {
+      const pluralPath = calc.path.replace("calculator/", "calculators/");
+      const pluralDir = path.join(distDir, pluralPath);
+      fs.mkdirSync(pluralDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, `${pluralPath}.html`), pageHtml, "utf-8");
+      fs.writeFileSync(path.join(pluralDir, "index.html"), pageHtml, "utf-8");
+    }
+
+    console.log(`  ✓ Prerendered /${calc.path} (Canonical: ${calc.canonical})`);
+  }
+
+  // 3c. Prerender Static Modules (FAQ, Glossary, Guides)
+  const STATIC_MODULE_PAGES = [
+    {
+      slug: "faq",
+      path: "faq",
+      title: "Frequently Asked Questions (FAQ) | YieldNest",
+      description: "Answers to common retail investor questions about mutual fund safety, capital gains tax, SIP compounding, and redemption in India.",
+      canonical: "https://www.yieldnest.online/faq",
+      badge: "Coming Soon",
+      heading: "Frequently Asked Questions (FAQ)",
+      intro: "Clear, evidence-backed answers to the most common retail questions regarding Indian mutual funds, capital gains taxation, SIP execution, and safety.",
+      keywords: "mutual fund FAQ, is mutual fund safe, mutual fund tax rules, SIP questions, mutual fund redemption time",
+    },
+    {
+      slug: "glossary",
+      path: "glossary",
+      title: "Mutual Fund Glossary: Key Terms & Definitions | YieldNest",
+      description: "A comprehensive glossary of essential Indian mutual fund terms including NAV, TER, ISIN, CAN, IDCW, exit loads, and SEBI regulations.",
+      canonical: "https://www.yieldnest.online/glossary",
+      badge: "Coming Soon",
+      heading: "Mutual Fund Glossary: Key Terms & Definitions",
+      intro: "An authoritative, jargon-free reference dictionary explaining essential technical metrics, regulatory abbreviations, and valuation concepts for Indian mutual fund investors.",
+      keywords: "mutual fund glossary, NAV meaning, TER meaning, ISIN mutual fund, CAN mutual fund, IDCW meaning, exit load",
+    },
+    {
+      slug: "guides",
+      path: "guides",
+      title: "Mutual Fund Investor Guides & Educational Pillars | YieldNest",
+      description: "In-depth educational guides covering mutual fund fundamentals, portfolio building, risk evaluation, and asset allocation for Indian investors.",
+      canonical: "https://www.yieldnest.online/guides",
+      badge: "Coming Soon",
+      heading: "Mutual Fund Investor Guides & Educational Pillars",
+      intro: "Step-by-step educational pillar frameworks mapping financial horizons to SEBI fund categories without naming or promoting individual schemes.",
+      keywords: "mutual fund guide, how to invest in mutual funds, mutual fund basics, asset allocation India, direct mutual funds",
+    },
+  ];
+
+  for (const mod of STATIC_MODULE_PAGES) {
+    const pageHtml = mod.slug === "faq" ? injectFAQPage(baseHtml) : mod.slug === "glossary" ? injectGlossaryPage(baseHtml) : injectGuidesIndex(baseHtml);
+    const targetDir = path.join(distDir, mod.path);
+    fs.mkdirSync(targetDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, `${mod.path}.html`), pageHtml, "utf-8");
+    fs.writeFileSync(path.join(targetDir, "index.html"), pageHtml, "utf-8");
+    console.log(`  ✓ Prerendered /${mod.path} (Canonical: ${mod.canonical})`);
+  }
+
+  // 3c-1. Prerender Dedicated Guides: How to Choose a Mutual Fund & Printable Redemption Checklist
+  const howToChooseHtml = injectHowToChooseGuide(baseHtml);
+  const howToChooseDir = path.join(distDir, "guides", "how-to-choose-a-mutual-fund");
+  fs.mkdirSync(howToChooseDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "guides", "how-to-choose-a-mutual-fund.html"), howToChooseHtml, "utf-8");
+  fs.writeFileSync(path.join(howToChooseDir, "index.html"), howToChooseHtml, "utf-8");
+
+  // Root alias: /how-to-choose-a-mutual-fund
+  const howToChooseRoot = path.join(distDir, "how-to-choose-a-mutual-fund");
+  fs.mkdirSync(howToChooseRoot, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "how-to-choose-a-mutual-fund.html"), howToChooseHtml, "utf-8");
+  fs.writeFileSync(path.join(howToChooseRoot, "index.html"), howToChooseHtml, "utf-8");
+  console.log(`  ✓ Prerendered /guides/how-to-choose-a-mutual-fund (Canonical: ${CANONICAL_ORIGIN}/guides/how-to-choose-a-mutual-fund)`);
+
+  const redemptionHtml = injectRedemptionChecklistPage(baseHtml);
+  const redemptionDir = path.join(distDir, "guides", "redemption-checklist");
+  fs.mkdirSync(redemptionDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "guides", "redemption-checklist.html"), redemptionHtml, "utf-8");
+  fs.writeFileSync(path.join(redemptionDir, "index.html"), redemptionHtml, "utf-8");
+
+  // Root alias: /redemption-checklist
+  const redemptionRoot = path.join(distDir, "redemption-checklist");
+  fs.mkdirSync(redemptionRoot, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "redemption-checklist.html"), redemptionHtml, "utf-8");
+  fs.writeFileSync(path.join(redemptionRoot, "index.html"), redemptionHtml, "utf-8");
+  console.log(`  ✓ Prerendered /guides/redemption-checklist (Canonical: ${CANONICAL_ORIGIN}/guides/redemption-checklist)`);
+
+  // 3c-2. Prerender Topic Hubs (Directory + 7 Individual Hub Pages)
+  const hubsIndexHtml = injectTopicHubsIndex(baseHtml);
+  const hubsDir = path.join(distDir, "hubs");
+  fs.mkdirSync(hubsDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "hubs.html"), hubsIndexHtml, "utf-8");
+  fs.writeFileSync(path.join(hubsDir, "index.html"), hubsIndexHtml, "utf-8");
+
+  const topicsDir = path.join(distDir, "topics");
+  fs.mkdirSync(topicsDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "topics.html"), hubsIndexHtml, "utf-8");
+  fs.writeFileSync(path.join(topicsDir, "index.html"), hubsIndexHtml, "utf-8");
+  console.log(`  ✓ Prerendered /hubs and /topics (Canonical: ${CANONICAL_ORIGIN}/hubs)`);
+
+  for (const hub of TOPIC_HUBS) {
+    const hubHtml = injectTopicHub(baseHtml, hub, articles);
+    const hubDir = path.join(distDir, "hub", hub.slug);
+    fs.mkdirSync(hubDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, "hub", `${hub.slug}.html`), hubHtml, "utf-8");
+    fs.writeFileSync(path.join(hubDir, "index.html"), hubHtml, "utf-8");
+
+    const topicDir = path.join(distDir, "topic", hub.slug);
+    fs.mkdirSync(topicDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, "topic", `${hub.slug}.html`), hubHtml, "utf-8");
+    fs.writeFileSync(path.join(topicDir, "index.html"), hubHtml, "utf-8");
+
+    console.log(`  ✓ Prerendered /hub/${hub.slug} (Canonical: ${CANONICAL_ORIGIN}/hub/${hub.slug})`);
+  }
+
+  // 3c-3. Prerender About Us Page
+  const aboutHtml = injectAboutPage(baseHtml);
+  const aboutDir = path.join(distDir, "about");
+  fs.mkdirSync(aboutDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "about.html"), aboutHtml, "utf-8");
+  fs.writeFileSync(path.join(aboutDir, "index.html"), aboutHtml, "utf-8");
+
+  const aboutUsDir = path.join(distDir, "about-us");
+  fs.mkdirSync(aboutUsDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "about-us.html"), aboutHtml, "utf-8");
+  fs.writeFileSync(path.join(aboutUsDir, "index.html"), aboutHtml, "utf-8");
+  console.log(`  ✓ Prerendered /about and /about-us (Canonical: ${CANONICAL_ORIGIN}/about)`);
+
+  // 3c-4. Prerender Terms & Conditions Page
+  const termsHtml = injectTermsPage(baseHtml);
+  const termsDir = path.join(distDir, "terms");
+  fs.mkdirSync(termsDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "terms.html"), termsHtml, "utf-8");
+  fs.writeFileSync(path.join(termsDir, "index.html"), termsHtml, "utf-8");
+
+  for (const termsAlias of ["terms-and-conditions", "terms-of-use", "terms-of-service"]) {
+    const aliasDir = path.join(distDir, termsAlias);
+    fs.mkdirSync(aliasDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, `${termsAlias}.html`), termsHtml, "utf-8");
+    fs.writeFileSync(path.join(aliasDir, "index.html"), termsHtml, "utf-8");
+  }
+  console.log(`  ✓ Prerendered /terms and aliases (Canonical: ${CANONICAL_ORIGIN}/terms)`);
+
+  // 3d. Generate static HTML fallbacks for legacy/typo slugs so direct file access never 404s
+  const LEGACY_ALIASES = [
+    {
+      sourceSlug: "direct-vs-regular-mutual-funds-charges-commissions-compissions",
+      targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
+    },
+    {
+      sourceSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market-volatility",
+      targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
+    },
+    {
+      sourceSlug: "total-expense-ratio-ter-breakdown-impact-sip-returns",
+      targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
+    },
+  ];
+
+  for (const alias of LEGACY_ALIASES) {
+    const targetArt = articles.find((a) => a.slug === alias.targetSlug);
+    if (targetArt) {
+      const targetHtml = injectArticle(baseHtml, targetArt);
+      const aliasDir = path.join(distDir, "article", alias.sourceSlug);
+      fs.mkdirSync(aliasDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, "article", `${alias.sourceSlug}.html`), targetHtml, "utf-8");
+      fs.writeFileSync(path.join(aliasDir, "index.html"), targetHtml, "utf-8");
+      console.log(`  ✓ Created static fallback alias for /article/${alias.sourceSlug} -> /article/${alias.targetSlug}`);
+    }
+  }
+
+  // 4. Generate and sync sitemap.xml to dist and public
+  const sitemapXml = buildSitemapXmlString(articles);
+  fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemapXml, "utf-8");
+  fs.writeFileSync(path.join(rootDir, "public", "sitemap.xml"), sitemapXml, "utf-8");
+  console.log("  ✓ Synced sitemap.xml to dist/ and public/ with all www.yieldnest.online URLs");
+
+  // 5. Sync robots.txt and IndexNow keys
+  const robotsSrc = path.join(rootDir, "public", "robots.txt");
+  if (fs.existsSync(robotsSrc)) {
+    fs.copyFileSync(robotsSrc, path.join(distDir, "robots.txt"));
+    console.log("  ✓ Copied robots.txt to dist/");
+  }
+
+  // 5b. Sync IndexNow verification files
+  for (const indexNowFile of ["caef2d2b54404d86b8fecc69ca144cfc.txt", "indexnow.txt"]) {
+    const src = path.join(rootDir, "public", indexNowFile);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(distDir, indexNowFile));
+      console.log(`  ✓ Copied IndexNow key file ${indexNowFile} to dist/`);
+    }
+  }
+
+  // 6. Generate and sync llms.txt and llms-full.txt
+  const llmsTxtContent = buildLlmsTxtString(articles);
+  const llmsFullContent = buildLlmsFullString(articles);
+  fs.writeFileSync(path.join(distDir, "llms.txt"), llmsTxtContent, "utf-8");
+  fs.writeFileSync(path.join(rootDir, "public", "llms.txt"), llmsTxtContent, "utf-8");
+  fs.writeFileSync(path.join(distDir, "llms-full.txt"), llmsFullContent, "utf-8");
+  fs.writeFileSync(path.join(rootDir, "public", "llms-full.txt"), llmsFullContent, "utf-8");
+  console.log("  ✓ Generated and synced complete llms.txt and llms-full.txt to dist/ and public/");
+
+  // 7. Sync ai-catalog.json and ard.json for Agentic Browsing (ARD spec)
+  const distWellKnown = path.join(distDir, ".well-known");
+  fs.mkdirSync(distWellKnown, { recursive: true });
+  for (const catalogFile of ["ai-catalog.json", "ard.json"]) {
+    const src = path.join(rootDir, "public", ".well-known", catalogFile);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(distWellKnown, catalogFile));
+      console.log(`  ✓ Copied .well-known/${catalogFile} to dist/.well-known/`);
+    }
+  }
+  const rootCatalog = path.join(rootDir, "public", "ai-catalog.json");
+  if (fs.existsSync(rootCatalog)) {
+    fs.copyFileSync(rootCatalog, path.join(distDir, "ai-catalog.json"));
+  }
+
+  // 8. Generate static api/posts.json for instant edge response on Vercel without cold start
+  const apiDir = path.join(distDir, "api");
+  const publicApiDir = path.join(rootDir, "public", "api");
+  fs.mkdirSync(apiDir, { recursive: true });
+  fs.mkdirSync(publicApiDir, { recursive: true });
+  const postsJson = JSON.stringify(articles);
+  fs.writeFileSync(path.join(apiDir, "posts.json"), postsJson, "utf-8");
+  fs.writeFileSync(path.join(publicApiDir, "posts.json"), postsJson, "utf-8");
+  // Also create dist/api/posts file for servers that serve exact path
+  fs.writeFileSync(path.join(apiDir, "posts"), postsJson, "utf-8");
+  console.log("  ✓ Generated static edge API endpoint at /api/posts.json and /api/posts");
+
+  console.log("✨ [Prerender] All static SEO pages successfully pre-rendered with zero redirects!");
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)) {
+  runPrerender().catch((err) => {
+    console.error("❌ [Prerender] Error during static prerendering:", err);
+    process.exit(1);
+  });
+}
