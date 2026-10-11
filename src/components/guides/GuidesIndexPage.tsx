@@ -29,6 +29,7 @@ interface GuidesIndexPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSearchChange?: (q: string) => void;
   searchQuery?: string;
 }
@@ -47,6 +48,7 @@ export function GuidesIndexPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSearchChange,
   searchQuery,
 }: GuidesIndexPageProps) {
@@ -127,6 +129,7 @@ export function GuidesIndexPage({
       onNavigateHubs={onNavigateHubs || (onNavigateHub ? () => onNavigateHub() : undefined)}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}
     >

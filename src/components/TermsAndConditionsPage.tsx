@@ -25,6 +25,7 @@ interface TermsAndConditionsPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSearchChange?: (q: string) => void;
   searchQuery?: string;
 }
@@ -41,6 +42,7 @@ export function TermsAndConditionsPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSearchChange,
   searchQuery,
 }: TermsAndConditionsPageProps) {
@@ -66,6 +68,7 @@ export function TermsAndConditionsPage({
       onNavigateHubs={onNavigateHubs}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       activeMenu="terms"
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}

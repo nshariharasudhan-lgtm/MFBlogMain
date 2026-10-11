@@ -24,12 +24,13 @@ import { BreadcrumbNavigation } from "./BreadcrumbNavigation";
 import { SEOHead } from "./SEOHead";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
-import { SiteSettings } from "../types";
+import { SiteSettings, ArticleCategory } from "../types";
 import { useLanguage } from "../context/LanguageContext";
 
 interface ToolkitDirectoryPageProps {
   settings: SiteSettings;
   onNavigateHome: () => void;
+  onSelectCategory?: (category: ArticleCategory | "all") => void;
   onNavigateCalculator: (url?: string) => void;
   onNavigateCalculators: () => void;
   onNavigateGuide: (guideId?: "how-to-choose" | "redemption" | "index") => void;
@@ -39,6 +40,7 @@ interface ToolkitDirectoryPageProps {
   onNavigateFAQ: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSearchChange: (query: string) => void;
   searchQuery: string;
 }
@@ -62,6 +64,7 @@ interface ToolItem {
 export function ToolkitDirectoryPage({
   settings,
   onNavigateHome,
+  onSelectCategory,
   onNavigateCalculator,
   onNavigateCalculators,
   onNavigateGuide,
@@ -71,12 +74,34 @@ export function ToolkitDirectoryPage({
   onNavigateFAQ,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSearchChange,
   searchQuery,
 }: ToolkitDirectoryPageProps) {
   const { isHindi } = useLanguage();
   const [filterCategory, setFilterCategory] = useState<"all" | "calculator" | "guide" | "hub" | "reference">("all");
   const [localSearch, setLocalSearch] = useState("");
+
+  const handleSelectCategory = (cat: ArticleCategory | "all") => {
+    if (onSelectCategory) {
+      onSelectCategory(cat);
+    } else {
+      const slugMap: Record<string, string> = {
+        "Fund Comparison": "fund-comparison",
+        "Performance Analysis": "performance-analysis",
+        "Market Trends": "market-trends",
+        "Category Deep-Dive": "category-deep-dive",
+        "SIP Strategies": "sip-strategies",
+      };
+      if (cat === "all") {
+        window.history.pushState({}, "", "/");
+      } else {
+        window.history.pushState({}, "", `/category/${slugMap[cat] || "fund-comparison"}`);
+      }
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const handleLinkClick = (e: React.MouseEvent, action: () => void, path: string) => {
     if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
@@ -447,20 +472,21 @@ export function ToolkitDirectoryPage({
 
       <Navbar
         currentCategory="all"
-        onSelectCategory={() => {}}
+        onSelectCategory={handleSelectCategory}
         onSearchChange={onSearchChange}
         searchQuery={searchQuery}
         settings={settings}
         onNavigateHome={onNavigateHome}
         isCalculatorView={false}
         onNavigateCalculators={onNavigateCalculators}
-        activeMenu="none"
+        activeMenu="toolkit"
         onNavigateFAQ={onNavigateFAQ}
         onNavigateGlossary={onNavigateGlossary}
         onNavigateGuides={() => onNavigateGuide("index")}
         onNavigateHubs={onNavigateHubs}
         onNavigateAbout={onNavigateAbout}
         onNavigateTerms={onNavigateTerms}
+        onNavigateToolkit={onNavigateToolkit}
       />
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-10 space-y-8">
@@ -708,7 +734,7 @@ export function ToolkitDirectoryPage({
 
       <Footer
         settings={settings}
-        onSelectCategory={() => {}}
+        onSelectCategory={handleSelectCategory}
         onNavigateCalculators={onNavigateCalculators}
         onNavigateCalculator={onNavigateCalculator}
         onNavigateFAQ={onNavigateFAQ}
@@ -717,6 +743,7 @@ export function ToolkitDirectoryPage({
         onNavigateHubs={onNavigateHubs}
         onNavigateAbout={onNavigateAbout}
         onNavigateTerms={onNavigateTerms}
+        onNavigateToolkit={onNavigateToolkit}
       />
     </div>
   );

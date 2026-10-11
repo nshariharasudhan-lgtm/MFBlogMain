@@ -33,6 +33,7 @@ interface AboutUsPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSearchChange?: (q: string) => void;
   searchQuery?: string;
 }
@@ -49,6 +50,7 @@ export function AboutUsPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSearchChange,
   searchQuery,
 }: AboutUsPageProps) {
@@ -74,6 +76,7 @@ export function AboutUsPage({
       onNavigateHubs={onNavigateHubs}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       activeMenu="about"
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}

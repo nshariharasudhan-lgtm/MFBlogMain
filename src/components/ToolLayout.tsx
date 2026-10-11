@@ -27,7 +27,8 @@ interface ToolLayoutProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
-  activeMenu?: "calculators" | "faq" | "glossary" | "guides" | "hubs" | "about" | "terms" | "categories" | "none";
+  onNavigateToolkit?: () => void;
+  activeMenu?: "calculators" | "faq" | "glossary" | "guides" | "hubs" | "about" | "terms" | "categories" | "toolkit" | "none";
 }
 
 export function ToolLayout({
@@ -38,7 +39,7 @@ export function ToolLayout({
   children,
   settings,
   currentCategory = "all",
-  onSelectCategory = () => {},
+  onSelectCategory,
   onSearchChange = () => {},
   searchQuery = "",
   onNavigateHome,
@@ -50,14 +51,37 @@ export function ToolLayout({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   activeMenu = "none",
 }: ToolLayoutProps) {
+  // Safe category selection fallback
+  const handleSelectCategory = (cat: ArticleCategory | "all") => {
+    if (onSelectCategory) {
+      onSelectCategory(cat);
+    } else {
+      const slugMap: Record<string, string> = {
+        "Fund Comparison": "fund-comparison",
+        "Performance Analysis": "performance-analysis",
+        "Market Trends": "market-trends",
+        "Category Deep-Dive": "category-deep-dive",
+        "SIP Strategies": "sip-strategies",
+      };
+      if (cat === "all") {
+        window.history.pushState({}, "", "/");
+      } else {
+        window.history.pushState({}, "", `/category/${slugMap[cat] || "fund-comparison"}`);
+      }
+      window.dispatchEvent(new PopStateEvent("popstate"));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F5] flex flex-col text-stone-900 font-sans selection:bg-emerald-100 selection:text-emerald-950">
       {/* Top Navbar */}
       <Navbar
         currentCategory={currentCategory}
-        onSelectCategory={onSelectCategory}
+        onSelectCategory={handleSelectCategory}
         onSearchChange={onSearchChange}
         searchQuery={searchQuery}
         settings={settings}
@@ -71,6 +95,7 @@ export function ToolLayout({
         onNavigateHubs={onNavigateHubs}
         onNavigateAbout={onNavigateAbout}
         onNavigateTerms={onNavigateTerms}
+        onNavigateToolkit={onNavigateToolkit}
       />
 
       {/* Main Page Area */}
@@ -119,7 +144,7 @@ export function ToolLayout({
       {/* Global Footer */}
       <Footer
         settings={settings}
-        onSelectCategory={onSelectCategory}
+        onSelectCategory={handleSelectCategory}
         onNavigateCalculators={onNavigateCalculators}
         onNavigateCalculator={onNavigateCalculator}
         onNavigateFAQ={onNavigateFAQ}
@@ -128,6 +153,7 @@ export function ToolLayout({
         onNavigateHubs={onNavigateHubs}
         onNavigateAbout={onNavigateAbout}
         onNavigateTerms={onNavigateTerms}
+        onNavigateToolkit={onNavigateToolkit}
       />
     </div>
   );

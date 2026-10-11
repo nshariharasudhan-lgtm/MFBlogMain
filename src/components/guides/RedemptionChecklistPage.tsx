@@ -31,6 +31,7 @@ interface RedemptionChecklistPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSearchChange?: (q: string) => void;
   searchQuery?: string;
 }
@@ -48,6 +49,7 @@ export function RedemptionChecklistPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSearchChange,
   searchQuery,
 }: RedemptionChecklistPageProps) {
@@ -116,6 +118,7 @@ export function RedemptionChecklistPage({
       onNavigateHubs={onNavigateHubs || (onNavigateHub ? () => onNavigateHub() : undefined)}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}
     >

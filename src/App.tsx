@@ -39,6 +39,7 @@ import { AboutUsPage } from "./components/AboutUsPage";
 import { TermsAndConditionsPage } from "./components/TermsAndConditionsPage";
 import { InvestorCommandDeck } from "./components/InvestorCommandDeck";
 import { ToolkitDirectoryPage } from "./components/ToolkitDirectoryPage";
+import { CategoryPage } from "./components/CategoryPage";
 
 // Code-split heavy components away from initial public visitor bundle
 const ArticleReader = lazy(() =>
@@ -638,7 +639,7 @@ function YieldNestApp() {
         return;
       }
     } else if (path.startsWith("/category/")) {
-      const catSlug = path.replace(/^\/category\//, "").replace(/\/+$/, "");
+      const catSlug = path.replace(/^\/category\//, "").replace(/\/+$/, "").toLowerCase();
       if (CATEGORY_SLUG_MAP[catSlug]) {
         setCurrentCategory(CATEGORY_SLUG_MAP[catSlug]);
         setSelectedArticle(null);
@@ -686,6 +687,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
 
     const queryString = target && target.includes("?") ? `?${target.split("?")[1]}` : "";
     const cleanTarget = target
@@ -741,6 +743,7 @@ function YieldNestApp() {
     setIsCalculatorView(false);
     setPlaceholderView(null);
     setActiveStaticPage(null);
+    setIsToolkitView(false);
 
     if (!hubSlug || hubSlug === "all" || hubSlug === "") {
       setIsHubsIndexView(true);
@@ -768,6 +771,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     window.history.pushState({}, "", "/faq");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -781,6 +785,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     window.history.pushState({}, "", "/glossary");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -795,6 +800,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     if (subguide === "how-to-choose") {
       window.history.pushState({}, "", "/guides/how-to-choose-a-mutual-fund");
     } else if (subguide === "redemption") {
@@ -814,6 +820,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     window.history.pushState({}, "", "/about");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -827,6 +834,7 @@ function YieldNestApp() {
     setIsAdminView(false);
     setSelectedHub(null);
     setIsHubsIndexView(false);
+    setIsToolkitView(false);
     window.history.pushState({}, "", "/terms");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -1105,6 +1113,7 @@ function YieldNestApp() {
           onNavigateHubs={() => handleNavigateHub()}
           onNavigateAbout={handleNavigateAbout}
           onNavigateTerms={handleNavigateTerms}
+          onNavigateToolkit={handleNavigateToolkit}
           onSelectCategory={(cat) => {
             setSelectedHub(null);
             handleSelectCategory(cat);
@@ -1118,6 +1127,7 @@ function YieldNestApp() {
         <ToolkitDirectoryPage
           settings={settings}
           onNavigateHome={handleBackToHome}
+          onSelectCategory={handleSelectCategory}
           onNavigateCalculator={(url) => handleOpenCalculators(url)}
           onNavigateCalculators={() => handleOpenCalculators()}
           onNavigateGuide={(guideId) => handleNavigateGuides(guideId)}
@@ -1127,6 +1137,7 @@ function YieldNestApp() {
           onNavigateFAQ={handleNavigateFAQ}
           onNavigateAbout={handleNavigateAbout}
           onNavigateTerms={handleNavigateTerms}
+          onNavigateToolkit={handleNavigateToolkit}
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
         />
@@ -1140,6 +1151,7 @@ function YieldNestApp() {
           onNavigateHubs={() => handleNavigateHub()}
           onNavigateAbout={handleNavigateAbout}
           onNavigateTerms={handleNavigateTerms}
+          onNavigateToolkit={handleNavigateToolkit}
           onNavigateCalculators={() => handleOpenCalculators()}
           onNavigateFAQ={handleNavigateFAQ}
           onNavigateGlossary={handleNavigateGlossary}
@@ -1445,6 +1457,8 @@ function YieldNestApp() {
               onNavigateGuides={handleNavigateGuides}
               onNavigateHubs={() => handleNavigateHub()}
               onNavigateAbout={handleNavigateAbout}
+              onNavigateTerms={handleNavigateTerms}
+              onNavigateToolkit={handleNavigateToolkit}
             />
 
             <main className="flex-1">
@@ -1473,6 +1487,7 @@ function YieldNestApp() {
               onNavigateHubs={() => handleNavigateHub()}
               onNavigateAbout={handleNavigateAbout}
               onNavigateTerms={handleNavigateTerms}
+              onNavigateToolkit={handleNavigateToolkit}
             />
           </>
         )
@@ -1514,11 +1529,33 @@ function YieldNestApp() {
             onNavigateToolkit={handleNavigateToolkit}
           />
         </>
+      ) : currentCategory !== "all" ? (
+        /* Dedicated Individual Category Page */
+        <CategoryPage
+          category={currentCategory}
+          posts={posts}
+          settings={settings}
+          onNavigateHome={handleBackToHome}
+          onSelectCategory={handleSelectCategory}
+          onNavigateArticle={handleOpenArticle}
+          onNavigateCalculators={() => handleOpenCalculators()}
+          onNavigateCalculator={(url) => handleOpenCalculators(url)}
+          onNavigateFAQ={handleNavigateFAQ}
+          onNavigateGlossary={handleNavigateGlossary}
+          onNavigateGuides={handleNavigateGuides}
+          onNavigateHub={handleNavigateHub}
+          onNavigateHubs={() => handleNavigateHub()}
+          onNavigateAbout={handleNavigateAbout}
+          onNavigateTerms={handleNavigateTerms}
+          onNavigateToolkit={handleNavigateToolkit}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
       ) : (
-        /* Blog Main Homepage */
+        /* Blog Main Homepage (All Research) */
         <>
           <Navbar
-            currentCategory={currentCategory}
+            currentCategory="all"
             onSelectCategory={handleSelectCategory}
             onSearchChange={setSearchQuery}
             searchQuery={searchQuery}
@@ -1579,6 +1616,7 @@ function YieldNestApp() {
                         key={post.id}
                         post={post}
                         onOpen={handleOpenArticle}
+                        onSelectCategory={handleSelectCategory}
                       />
                     ))}
                   </div>

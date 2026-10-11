@@ -26,6 +26,7 @@ interface TopicHubsIndexPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSelectCategory?: (category: ArticleCategory | "all") => void;
   onSearchChange?: (query: string) => void;
   searchQuery?: string;
@@ -43,6 +44,7 @@ export function TopicHubsIndexPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSelectCategory,
   onSearchChange,
   searchQuery = "",
@@ -61,6 +63,7 @@ export function TopicHubsIndexPage({
       onNavigateHubs={onNavigateHubs || (() => onNavigateHub("all"))}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSelectCategory={onSelectCategory}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}

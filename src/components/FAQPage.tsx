@@ -193,6 +193,7 @@ interface FAQPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
 }
 
 export function FAQPage({
@@ -206,6 +207,7 @@ export function FAQPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
 }: FAQPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopic, setSelectedTopic] = useState<string>("all");
@@ -382,6 +384,7 @@ export function FAQPage({
       onNavigateHubs={onNavigateHubs}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       activeMenu="faq"
     >
       <div className="space-y-6">

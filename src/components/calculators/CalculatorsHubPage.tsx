@@ -26,6 +26,7 @@ interface CalculatorsHubPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSelectCategory?: (category: ArticleCategory | "all") => void;
   onSearchChange?: (query: string) => void;
   searchQuery?: string;
@@ -55,6 +56,7 @@ export function CalculatorsHubPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSelectCategory,
   onSearchChange,
   searchQuery,
@@ -221,6 +223,7 @@ export function CalculatorsHubPage({
       onNavigateHubs={onNavigateHubs}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSelectCategory={onSelectCategory}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}

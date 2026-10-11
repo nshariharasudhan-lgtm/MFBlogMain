@@ -39,6 +39,7 @@ interface HowToChooseFundGuideProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onNavigateRedemptionChecklist?: () => void;
   onSearchChange?: (q: string) => void;
   searchQuery?: string;
@@ -56,6 +57,7 @@ export function HowToChooseFundGuide({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onNavigateRedemptionChecklist,
   onSearchChange,
   searchQuery,
@@ -159,6 +161,7 @@ export function HowToChooseFundGuide({
       onNavigateHubs={onNavigateHubs || (onNavigateHub ? () => onNavigateHub() : undefined)}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}
     >

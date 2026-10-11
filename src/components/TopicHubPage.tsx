@@ -36,6 +36,7 @@ interface TopicHubPageProps {
   onNavigateHubs?: () => void;
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
+  onNavigateToolkit?: () => void;
   onSelectCategory?: (category: ArticleCategory | "all") => void;
   onNavigateArticle?: (post: ArticlePost) => void;
   onSearchChange?: (query: string) => void;
@@ -57,6 +58,7 @@ export function TopicHubPage({
   onNavigateHubs,
   onNavigateAbout,
   onNavigateTerms,
+  onNavigateToolkit,
   onSelectCategory,
   onNavigateArticle,
   onSearchChange,
@@ -257,6 +259,7 @@ export function TopicHubPage({
       onNavigateHubs={onNavigateHubs || (() => handleHubSwitch(""))}
       onNavigateAbout={onNavigateAbout}
       onNavigateTerms={onNavigateTerms}
+      onNavigateToolkit={onNavigateToolkit}
       onSelectCategory={onSelectCategory}
       onSearchChange={onSearchChange}
       searchQuery={searchQuery}
