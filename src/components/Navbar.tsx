@@ -221,24 +221,24 @@ export function Navbar({
           className="cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] text-inherit no-underline shrink-0"
           title="YieldNest.online - Return to Homepage"
         >
-          <YieldNestLogo size="md" showTagline={true} />
+          <YieldNestLogo size="md" showTagline={false} />
         </a>
 
         {/* Center / Right: Site-Wide Search & Controls */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end max-w-xl">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-1 justify-end max-w-xl">
           {/* Site-Wide Search Input with Instant Results Dropdown */}
-          <div ref={searchContainerRef} className="relative w-full max-w-xs sm:max-w-sm">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C887B]" />
+          <div ref={searchContainerRef} className="relative w-full max-w-[140px] sm:max-w-xs md:max-w-sm transition-all focus-within:max-w-[210px] sm:focus-within:max-w-xs">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-[#8C887B]" />
             <input
               type="text"
-              placeholder={isHindi ? "खोजें: कैलकुलेटर, फंड, शब्द..." : "Search calculators, funds, metrics..."}
+              placeholder={isHindi ? "खोजें..." : "Search..."}
               value={searchQuery}
               onFocus={() => setShowSearchDropdown(true)}
               onChange={(e) => {
                 onSearchChange(e.target.value);
                 setShowSearchDropdown(true);
               }}
-              className="w-full bg-[#F0EEE6] text-xs rounded-full pl-8 pr-7 py-1.5 border border-transparent focus:border-[#C4C0B3] focus:bg-white focus:outline-none transition-all placeholder:text-[#9E9B90]"
+              className="w-full bg-[#F0EEE6] text-xs rounded-full pl-7 sm:pl-8 pr-6 py-1.5 border border-transparent focus:border-[#C4C0B3] focus:bg-white focus:outline-none transition-all placeholder:text-[#9E9B90]"
             />
             {searchQuery && (
               <button
@@ -246,7 +246,8 @@ export function Navbar({
                   onSearchChange("");
                   setShowSearchDropdown(false);
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8C887B] hover:text-black text-xs font-mono"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#8C887B] hover:text-black text-xs font-mono p-1"
+                aria-label="Clear search"
               >
                 ✕
               </button>
@@ -254,7 +255,7 @@ export function Navbar({
 
             {/* Instant Site-Wide Search Results Dropdown */}
             {showSearchDropdown && query.length >= 2 && hasDirectMatches && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-stone-200 shadow-xl overflow-hidden z-50 p-2 space-y-2 text-xs font-sans text-left">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-stone-200 shadow-xl overflow-hidden z-50 p-2 space-y-2 text-xs font-sans text-left min-w-[240px]">
                 {/* Calculators match */}
                 {matchedCalculators.length > 0 && (
                   <div className="space-y-1">
@@ -268,7 +269,7 @@ export function Navbar({
                         onClick={(e) =>
                           handleLinkClick(e, () => onOpenCalculatorByUrl?.(c.url), c.url)
                         }
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                        className="flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group min-h-[38px]"
                       >
                         <span className="font-medium group-hover:text-emerald-900">{c.name}</span>
                         <span className="text-[10px] text-stone-500 font-mono-data">{c.category}</span>
@@ -290,7 +291,7 @@ export function Navbar({
                         onClick={(e) =>
                           handleLinkClick(e, () => onOpenHubBySlug?.(h.slug), `/hub/${h.slug}`)
                         }
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                        className="flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group min-h-[38px]"
                       >
                         <span className="font-medium group-hover:text-blue-900">{h.title}</span>
                         <span className="text-[10px] text-stone-500 font-mono-data">Hub</span>
@@ -312,7 +313,7 @@ export function Navbar({
                         onClick={(e) =>
                           handleLinkClick(e, onNavigateGlossary, `/glossary#${g.id}`)
                         }
-                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                        className="flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group min-h-[38px]"
                       >
                         <span className="font-medium group-hover:text-amber-900">{g.term}</span>
                         <span className="text-[10px] text-stone-500 font-mono-data">{g.cluster}</span>
@@ -329,8 +330,9 @@ export function Navbar({
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 rounded-lg border border-stone-300 text-stone-800 hover:bg-stone-100 lg:hidden shrink-0 cursor-pointer"
+            className="p-2 min-h-[38px] min-w-[38px] sm:min-h-[40px] sm:min-w-[40px] flex items-center justify-center rounded-lg border border-stone-300 text-stone-800 hover:bg-stone-100 lg:hidden shrink-0 cursor-pointer active:scale-95 transition-all"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -364,54 +366,114 @@ export function Navbar({
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
+      {/* Comprehensive Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#FAF9F5] border-t border-[#EAE8E0] px-4 py-4 space-y-3 shadow-inner font-sans">
-          <div className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pb-1 border-b border-stone-200">
-            Main Menu
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {primaryNavItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <a
-                  key={item.id}
-                  href={item.href}
-                  onClick={(e) => handleLinkClick(e, item.onClick, item.href)}
-                  className={`p-2 rounded-lg text-xs font-medium border flex items-center gap-2 no-underline cursor-pointer ${
-                    item.isActive
-                      ? "bg-[#1A1A1A] text-white border-black font-semibold"
-                      : "bg-white border-stone-200 text-stone-800 hover:bg-stone-100"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 shrink-0 text-stone-500" />
-                  <span className="truncate">{item.label}</span>
-                </a>
-              );
-            })}
+        <div className="lg:hidden bg-[#FAF9F5] border-t border-[#EAE8E0] px-4 py-4 space-y-4 shadow-xl font-sans max-h-[85vh] overflow-y-auto">
+          {/* Mobile Full-Width Search Input */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C887B]" />
+            <input
+              type="text"
+              placeholder={isHindi ? "खोजें: कैलकुलेटर, फंड, शब्द..." : "Search calculators, funds, metrics..."}
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full bg-white text-xs rounded-xl pl-9 pr-8 py-2.5 border border-stone-300 focus:border-stone-500 focus:outline-none"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-black text-xs font-mono p-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-xs text-stone-600">
+          {/* Quick Pillar Navigation */}
+          <div>
+            <div className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pb-1.5 border-b border-stone-200 mb-2">
+              Core Pillars
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {primaryNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    onClick={(e) => handleLinkClick(e, item.onClick, item.href)}
+                    className={`p-2.5 rounded-xl text-xs font-medium border flex items-center gap-2 no-underline cursor-pointer min-h-[44px] transition-all active:scale-[0.98] ${
+                      item.isActive
+                        ? "bg-[#1A1A1A] text-white border-black font-semibold shadow-xs"
+                        : "bg-white border-stone-200 text-stone-800 hover:bg-stone-100"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0 text-stone-500" />
+                    <span className="truncate">{item.label}</span>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Direct Calculators Access on Mobile */}
+          <div>
+            <div className="flex items-center justify-between text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pb-1.5 border-b border-stone-200 mb-2">
+              <span>Financial Calculators</span>
+              <a
+                href="/calculators"
+                onClick={(e) => handleLinkClick(e, onNavigateCalculators, "/calculators")}
+                className="text-emerald-800 font-bold hover:underline"
+              >
+                View All →
+              </a>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {SITE_CALCULATORS.slice(0, 4).map((c) => (
+                <a
+                  key={c.url}
+                  href={c.url}
+                  onClick={(e) =>
+                    handleLinkClick(e, () => onOpenCalculatorByUrl?.(c.url), c.url)
+                  }
+                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-white border border-stone-200/80 text-xs text-stone-800 hover:bg-stone-50 no-underline cursor-pointer min-h-[42px]"
+                >
+                  <span className="font-medium truncate">{c.name}</span>
+                  <span className="text-[10px] text-emerald-700 font-mono-data shrink-0 ml-1">Tool</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Informational & Legal Links */}
+          <div className="pt-2 border-t border-stone-200 grid grid-cols-2 gap-2 text-xs text-stone-600">
+            <a
+              href="/toolkit"
+              onClick={(e) => handleLinkClick(e, onNavigateToolkit, "/toolkit")}
+              className="py-2 px-1 hover:underline text-stone-900 font-semibold flex items-center gap-1"
+            >
+              <span>All 7 Tools & Checklists</span>
+            </a>
+            <a
+              href="/methodology"
+              onClick={(e) => handleLinkClick(e, onNavigateMethodology, "/methodology")}
+              className="py-2 px-1 hover:underline text-stone-700"
+            >
+              Methodology & Sources
+            </a>
             <a
               href="/about"
               onClick={(e) => handleLinkClick(e, onNavigateAbout, "/about")}
-              className="hover:underline text-stone-700"
+              className="py-2 px-1 hover:underline text-stone-700"
             >
               About YieldNest
             </a>
             <a
               href="/terms"
               onClick={(e) => handleLinkClick(e, onNavigateTerms, "/terms")}
-              className="hover:underline text-stone-700"
+              className="py-2 px-1 hover:underline text-stone-700"
             >
               Terms of Use
-            </a>
-            <a
-              href="/toolkit"
-              onClick={(e) => handleLinkClick(e, onNavigateToolkit, "/toolkit")}
-              className="hover:underline text-stone-700 font-semibold"
-            >
-              All Tools
             </a>
           </div>
         </div>

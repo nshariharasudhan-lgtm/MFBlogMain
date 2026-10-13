@@ -355,35 +355,41 @@ export function ArticleReader({
     const flushTable = (key: string) => {
       if (inTable && tableHeaders.length > 0) {
         elements.push(
-          <div key={key} className="my-6 overflow-x-auto rounded-xl border border-[#E3DFC2] bg-white shadow-xs">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead>
-                <tr className="bg-[#F5F3EC] border-b border-[#E3DFC2] text-[#1A1A1A]">
-                  {tableHeaders.map((th, i) => (
-                    <th key={i} className="py-3 px-4 font-semibold font-mono-data">
-                      <FormattedInlineText
-                        text={th.trim()}
-                        onNavigateSlug={handleInternalSlugNavigation}
-                      />
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#EAE8E0]">
-                {tableRows.map((row, rIdx) => (
-                  <tr key={rIdx} className={rIdx % 2 === 0 ? "bg-white" : "bg-[#FAF9F5]"}>
-                    {row.map((td, cIdx) => (
-                      <td key={cIdx} className="py-2.5 px-4 font-mono-data text-[#2E2C29]">
+          <div key={key} className="my-6 rounded-xl border border-[#E3DFC2] bg-white shadow-xs overflow-hidden">
+            <div className="sm:hidden px-3 py-1.5 bg-[#F5F3EC] border-b border-[#E3DFC2] text-[10px] font-mono-data text-stone-500 flex items-center justify-between">
+              <span>Financial Data Table</span>
+              <span className="text-emerald-800 font-semibold">← Scroll columns →</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                  <tr className="bg-[#F5F3EC] border-b border-[#E3DFC2] text-[#1A1A1A]">
+                    {tableHeaders.map((th, i) => (
+                      <th key={i} className="py-3 px-4 font-semibold font-mono-data whitespace-nowrap">
                         <FormattedInlineText
-                          text={td.trim()}
+                          text={th.trim()}
                           onNavigateSlug={handleInternalSlugNavigation}
                         />
-                      </td>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[#EAE8E0]">
+                  {tableRows.map((row, rIdx) => (
+                    <tr key={rIdx} className={rIdx % 2 === 0 ? "bg-white" : "bg-[#FAF9F5]"}>
+                      {row.map((td, cIdx) => (
+                        <td key={cIdx} className="py-2.5 px-4 font-mono-data text-[#2E2C29] whitespace-nowrap sm:whitespace-normal">
+                          <FormattedInlineText
+                            text={td.trim()}
+                            onNavigateSlug={handleInternalSlugNavigation}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         );
         tableHeaders = [];
@@ -579,26 +585,28 @@ export function ArticleReader({
         <div className="max-w-6xl xl:max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#59554C] hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-medium text-[#59554C] hover:text-black transition-colors min-h-[40px] px-2.5 py-1.5 -ml-2 rounded-lg hover:bg-stone-100 cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>{t("article.back")}</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium">{t("article.back")}</span>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={handleCopyLink}
-              className="p-1.5 rounded-md hover:bg-[#EAE8E0] text-[#59554C] transition-colors relative"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg hover:bg-[#EAE8E0] text-[#59554C] transition-colors relative cursor-pointer"
               title="Copy article link"
+              aria-label="Copy article link"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             </button>
             <a
               href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`"${post.title}" via ${settings.siteName}`)}&url=${encodeURIComponent(articleUrl)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-md hover:bg-[#EAE8E0] text-[#59554C] transition-colors text-xs font-semibold"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg hover:bg-[#EAE8E0] text-[#59554C] transition-colors text-xs font-semibold"
               title="Share on X"
+              aria-label="Share on X"
             >
               𝕏
             </a>
@@ -606,8 +614,9 @@ export function ArticleReader({
               href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`*${post.title}*\n${post.excerpt}\n\nRead article: ${articleUrl}`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 rounded-md hover:bg-[#EAE8E0] text-[#59554C] transition-colors text-xs font-semibold text-emerald-600"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg hover:bg-[#EAE8E0] text-[#59554C] transition-colors text-xs font-semibold text-emerald-600"
               title="Share on WhatsApp"
+              aria-label="Share on WhatsApp"
             >
               WA
             </a>

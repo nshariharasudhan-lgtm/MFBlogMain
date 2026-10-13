@@ -83,13 +83,13 @@ export function LanguageSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all cursor-pointer shadow-2xs bg-white border-stone-300 text-stone-800 hover:bg-stone-50 hover:border-stone-400 active:scale-95"
+        className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 min-h-[38px] rounded-full text-xs font-medium border transition-all cursor-pointer shadow-2xs bg-white border-stone-300 text-stone-800 hover:bg-stone-50 hover:border-stone-400 active:scale-95 shrink-0"
         aria-expanded={isOpen}
         aria-haspopup="true"
         title="Change Language / भाषा बदलें"
       >
         <Globe className="w-3.5 h-3.5 text-stone-600 shrink-0" />
-        <span className="font-medium tracking-tight">
+        <span className="font-medium tracking-tight text-xs">
           {currentOption.nativeLabel}
         </span>
         <span className="text-[10px] text-stone-400 font-mono hidden sm:inline">

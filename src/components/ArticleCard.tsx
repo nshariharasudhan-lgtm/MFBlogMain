@@ -164,8 +164,8 @@ export function ArticleCard({ post, onOpen, onSelectCategory, featured = false }
           </p>
 
           {primaryAmfi && (
-            <div className="pt-1.5 flex items-center justify-between text-[11px] font-mono-data text-stone-600 border-t border-stone-100">
-              <span className="truncate max-w-[220px]">Scheme: {primaryAmfi.schemeName}</span>
+            <div className="pt-1.5 flex items-center justify-between gap-2 text-[11px] font-mono-data text-stone-600 border-t border-stone-100">
+              <span className="truncate max-w-[140px] sm:max-w-[220px]">Scheme: {primaryAmfi.schemeName}</span>
               <span className="text-[10px] text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded shrink-0">
                 AMFI &amp; MFINDIA • As on Date
               </span>

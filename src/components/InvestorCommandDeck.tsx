@@ -118,7 +118,7 @@ export function InvestorCommandDeck({
               <a
                 href="/calculators/sip"
                 onClick={(e) => handleLinkClick(e, () => onNavigateCalculator("/calculators/sip"), "/calculators/sip")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <TrendingUp className="w-3 h-3 text-emerald-700" />
@@ -129,7 +129,7 @@ export function InvestorCommandDeck({
               <a
                 href="/calculators/step-up-sip"
                 onClick={(e) => handleLinkClick(e, () => onNavigateCalculator("/calculators/step-up-sip"), "/calculators/step-up-sip")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <Sliders className="w-3 h-3 text-blue-700" />
@@ -140,7 +140,7 @@ export function InvestorCommandDeck({
               <a
                 href="/calculators/direct-vs-regular"
                 onClick={(e) => handleLinkClick(e, () => onNavigateCalculator("/calculators/direct-vs-regular"), "/calculators/direct-vs-regular")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <Scale className="w-3 h-3 text-amber-700" />
@@ -190,7 +190,7 @@ export function InvestorCommandDeck({
               <a
                 href="/guides/redemption-checklist"
                 onClick={(e) => handleLinkClick(e, () => onNavigateGuide("redemption"), "/guides/redemption-checklist")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <FileCheck2 className="w-3 h-3 text-red-600" />
@@ -201,7 +201,7 @@ export function InvestorCommandDeck({
               <a
                 href="/guides/how-to-choose-a-mutual-fund"
                 onClick={(e) => handleLinkClick(e, () => onNavigateGuide("how-to-choose"), "/guides/how-to-choose-a-mutual-fund")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <ShieldCheck className="w-3 h-3 text-emerald-700" />
@@ -212,7 +212,7 @@ export function InvestorCommandDeck({
               <a
                 href="/article/consolidated-account-statement-cas-guide"
                 onClick={(e) => handleLinkClick(e, () => onNavigateGuide("index"), "/article/consolidated-account-statement-cas-guide")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <BookOpen className="w-3 h-3 text-stone-600" />
@@ -262,7 +262,7 @@ export function InvestorCommandDeck({
               <a
                 href="/hub/tax-and-elss"
                 onClick={(e) => handleLinkClick(e, () => onNavigateHub("tax-and-elss"), "/hub/tax-and-elss")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <DollarSign className="w-3 h-3 text-emerald-600" />
@@ -273,7 +273,7 @@ export function InvestorCommandDeck({
               <a
                 href="/hub/safety-and-risk"
                 onClick={(e) => handleLinkClick(e, () => onNavigateHub("safety-and-risk"), "/hub/safety-and-risk")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <ShieldCheck className="w-3 h-3 text-blue-600" />
@@ -284,7 +284,7 @@ export function InvestorCommandDeck({
               <a
                 href="/hub/comparisons"
                 onClick={(e) => handleLinkClick(e, () => onNavigateHub("comparisons"), "/hub/comparisons")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <PieChart className="w-3 h-3 text-amber-600" />
@@ -334,7 +334,7 @@ export function InvestorCommandDeck({
               <a
                 href="/glossary"
                 onClick={(e) => handleLinkClick(e, onNavigateGlossary, "/glossary")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <BookOpen className="w-3 h-3 text-stone-700" />
@@ -345,7 +345,7 @@ export function InvestorCommandDeck({
               <a
                 href="/calculators/swp"
                 onClick={(e) => handleLinkClick(e, () => onNavigateCalculator("/calculators/swp"), "/calculators/swp")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <TrendingUp className="w-3 h-3 text-purple-700" />
@@ -356,7 +356,7 @@ export function InvestorCommandDeck({
               <a
                 href="/article/sebi-amfi-mutual-fund-categorization-guide-all-scheme-categories-rules"
                 onClick={(e) => handleLinkClick(e, () => onNavigateHub("basics"), "/article/sebi-amfi-mutual-fund-categorization-guide-all-scheme-categories-rules")}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
+                className="flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/80 transition-colors no-underline group/link"
               >
                 <span className="font-medium text-[11px] flex items-center gap-1.5">
                   <Globe className="w-3 h-3 text-emerald-700" />

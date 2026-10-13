@@ -81,11 +81,11 @@ export function Footer({
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-200/70 text-stone-800 text-[11px] font-mono-data">
               <span>Status: Independent Investor Education • yieldnest.online</span>
             </div>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-stone-600 font-mono-data flex-wrap">
+            <div className="flex items-center gap-1.5 sm:gap-2 pt-1 text-[11px] text-stone-600 font-mono-data flex-wrap">
               <a
                 href="/about"
                 onClick={(e) => navigateTo(e, "/about", onNavigateAbout)}
-                className="hover:text-stone-900 underline font-medium"
+                className="hover:text-stone-900 underline font-medium py-1.5 px-1 min-h-[36px] inline-flex items-center"
               >
                 About Us
               </a>
@@ -93,7 +93,7 @@ export function Footer({
               <a
                 href="/methodology"
                 onClick={(e) => navigateTo(e, "/methodology", onNavigateMethodology)}
-                className="hover:text-stone-900 underline font-medium"
+                className="hover:text-stone-900 underline font-medium py-1.5 px-1 min-h-[36px] inline-flex items-center"
               >
                 Methodology &amp; Data Sources
               </a>
@@ -101,7 +101,7 @@ export function Footer({
               <a
                 href="/terms"
                 onClick={(e) => navigateTo(e, "/terms", onNavigateTerms)}
-                className="hover:text-stone-900 underline font-medium"
+                className="hover:text-stone-900 underline font-medium py-1.5 px-1 min-h-[36px] inline-flex items-center"
               >
                 Terms of Use
               </a>

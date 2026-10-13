@@ -100,7 +100,7 @@ export function TableOfContents({
           {isMobileDrawer ? (
             <button
               onClick={onCloseMobileDrawer}
-              className="p-1 rounded-md text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
               aria-label="Close table of contents"
             >
               <X className="w-4 h-4" />
@@ -130,7 +130,7 @@ export function TableOfContents({
       {/* Headings List */}
       {!isCollapsed && (
         <div className="p-2 sm:p-2.5">
-          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto pr-1 space-y-0.5 overscroll-contain">
+          <div className="max-h-[calc(100vh-18rem)] overflow-y-auto pr-1 space-y-1 overscroll-contain">
             {headings.map((heading) => {
               const isActive = activeId === heading.id;
               const isH3 = heading.level === 3;
@@ -145,7 +145,9 @@ export function TableOfContents({
                       onCloseMobileDrawer();
                     }
                   }}
-                  className={`group flex items-start gap-2 py-1.5 px-2.5 rounded-lg text-left transition-all relative ${
+                  className={`group flex items-start gap-2 ${
+                    isMobileDrawer ? "py-2.5 px-3 min-h-[44px]" : "py-1.5 px-2.5"
+                  } rounded-lg text-left transition-all relative ${
                     isH3 ? "pl-6 text-[11.5px]" : "text-xs font-medium"
                   } ${
                     isActive

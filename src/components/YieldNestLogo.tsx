@@ -19,7 +19,7 @@ export function YieldNestLogo({
       {/* Top Graphic Mark + Title */}
       <div className="flex items-center gap-3 sm:gap-4.5">
         {/* SVG Nest with 3 Golden Eggs & Sprouting Leaves */}
-        <div className={`shrink-0 ${isSmall ? "w-14 h-10" : isLarge ? "w-28 sm:w-32 h-18 sm:h-20" : "w-20 sm:w-24 h-14 sm:h-16"}`}>
+        <div className={`shrink-0 ${isSmall ? "w-10 sm:w-12 h-7 sm:h-9" : isLarge ? "w-24 sm:w-32 h-16 sm:h-20" : "w-11 sm:w-16 md:w-20 h-8 sm:h-12 md:h-14"}`}>
           <svg
             viewBox="0 0 160 110"
             fill="none"
@@ -119,10 +119,10 @@ export function YieldNestLogo({
             <span
               className={`font-serif font-black tracking-tight text-[#1A1A1A] ${
                 isSmall
-                  ? "text-xl sm:text-2xl"
+                  ? "text-lg sm:text-xl"
                   : isLarge
-                  ? "text-4xl sm:text-5xl md:text-6xl"
-                  : "text-3xl sm:text-4xl md:text-[42px]"
+                  ? "text-3xl sm:text-5xl md:text-6xl"
+                  : "text-xl sm:text-3xl md:text-[38px]"
               }`}
             >
               Yield
@@ -130,18 +130,18 @@ export function YieldNestLogo({
             <span
               className={`font-serif font-black italic tracking-tight text-[#16A34A] ${
                 isSmall
-                  ? "text-xl sm:text-2xl"
+                  ? "text-lg sm:text-xl"
                   : isLarge
-                  ? "text-4xl sm:text-5xl md:text-6xl"
-                  : "text-3xl sm:text-4xl md:text-[42px]"
+                  ? "text-3xl sm:text-5xl md:text-6xl"
+                  : "text-xl sm:text-3xl md:text-[38px]"
               }`}
             >
               Nest
             </span>
           </div>
           <span
-            className={`font-sans font-semibold text-[#5A6474] tracking-normal -mt-1 sm:-mt-2 ${
-              isSmall ? "text-[10px] pl-1" : isLarge ? "text-sm sm:text-base pl-2" : "text-xs sm:text-sm pl-1.5"
+            className={`font-sans font-semibold text-[#5A6474] tracking-normal -mt-0.5 sm:-mt-1.5 ${
+              isSmall ? "text-[9px] pl-1" : isLarge ? "text-xs sm:text-base pl-2" : "text-[10px] sm:text-xs md:text-sm pl-1 sm:pl-1.5"
             }`}
           >
             .online
@@ -149,27 +149,25 @@ export function YieldNestLogo({
         </div>
       </div>
 
-      {/* Subtitles & Divider Rules */}
+      {/* Subtitles & Divider Rules (gracefully responsive, hidden on mobile to avoid overflow) */}
       {showTagline && (
-        <div className="w-full mt-3 sm:mt-4 text-center max-w-xl">
+        <div className="w-full mt-2 sm:mt-3.5 text-center max-w-xl hidden sm:block">
           <div
-            className={`font-sans font-bold tracking-[0.16em] sm:tracking-[0.22em] text-[#1C1A17] uppercase ${
-              isSmall ? "text-[9px]" : "text-[11px] sm:text-xs md:text-[13px]"
+            className={`font-sans font-bold tracking-[0.14em] sm:tracking-[0.2em] text-[#1C1A17] uppercase ${
+              isSmall ? "text-[8.5px]" : "text-[10px] sm:text-xs md:text-[13px]"
             }`}
           >
             MUTUAL FUND RESEARCH &amp; ANALYTICS
           </div>
 
-          <div className="flex items-center justify-center gap-3 mt-1.5 px-2">
-            <div className="h-[1px] bg-stone-300 flex-1 max-w-[80px] sm:max-w-[120px]"></div>
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mt-1 px-2">
+            <div className="h-[1px] bg-stone-300 flex-1 max-w-[60px] sm:max-w-[120px]"></div>
             <span
-              className={`font-sans font-semibold tracking-wider text-stone-600 uppercase whitespace-nowrap ${
-                isSmall ? "text-[8px]" : "text-[9.5px] sm:text-[11px]"
-              }`}
+              className={`font-sans font-semibold tracking-wider text-stone-600 uppercase text-[8.5px] sm:text-[10.5px] truncate`}
             >
               FUND COMPARISON | PERFORMANCE ANALYSIS | SIP INSIGHTS
             </span>
-            <div className="h-[1px] bg-stone-300 flex-1 max-w-[80px] sm:max-w-[120px]"></div>
+            <div className="h-[1px] bg-stone-300 flex-1 max-w-[60px] sm:max-w-[120px]"></div>
           </div>
         </div>
       )}

@@ -105,7 +105,7 @@ export function HomePage({
               <ArrowRight className="w-4 h-4 text-stone-300 group-hover:translate-x-0.5 transition-transform" />
             </a>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
               <a
                 href="/category/fund-comparison"
                 onClick={(e) =>
@@ -115,7 +115,7 @@ export function HomePage({
                     "/category/fund-comparison"
                   )
                 }
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium border border-stone-300 transition-colors cursor-pointer no-underline text-center"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium border border-stone-300 transition-colors cursor-pointer no-underline text-center min-h-[44px]"
               >
                 <span>Explore Fund Comparisons</span>
               </a>
@@ -129,7 +129,7 @@ export function HomePage({
                     "/hub/sip-swp-stp"
                   )
                 }
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium border border-stone-300 transition-colors cursor-pointer no-underline text-center"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 text-sm font-medium border border-stone-300 transition-colors cursor-pointer no-underline text-center min-h-[44px]"
               >
                 <span>Learn SIP Basics</span>
               </a>
