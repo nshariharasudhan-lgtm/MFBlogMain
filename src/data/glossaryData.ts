@@ -361,6 +361,15 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     definition: "Portfolio Price-to-Earnings ratio is the weighted average valuation multiple of all underlying equity stocks held within a mutual fund portfolio. It indicates how much investors are paying per rupee of company earnings. A higher portfolio P/E indicates premium growth-oriented equities, while a lower P/E reflects value or dividend-yield investment mandates.",
     relatedTerms: ["factsheet", "benchmark-index", "rolling-returns"],
   },
+  {
+    id: "portfolio-overlap",
+    term: "Portfolio Overlap",
+    abbreviation: "Overlap",
+    cluster: "Risk & Performance",
+    letter: "P",
+    definition: "Portfolio Overlap measures the percentage of common stock holdings and identical asset weights shared between two or more mutual fund schemes. High overlap exceeding 40% indicates superficial diversification where an investor unknowingly duplicates holdings across multiple funds, incurring redundant expense ratios without achieving genuine downside risk containment.",
+    relatedTerms: ["diversification", "factsheet", "sharpe-ratio"],
+  },
 
   // R
   {

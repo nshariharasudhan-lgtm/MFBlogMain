@@ -7076,7 +7076,7 @@ Understanding SEBI's categorization empowers you to construct a robust, transpar
 To see how different scheme categories perform over full market cycles and evaluate how Total Expense Ratios impact your long-term wealth:
 - Compare active large-caps with index funds in our **[Nifty 50 Index Funds vs. Active Large Cap Guide](/article/nifty-50-index-funds-vs-active-large-cap-funds-rolling-returns-ter-drag)**.
 - Eliminate distributor commission drag by reading our **[AMFI Direct Plan Complete Guide](/article/amfi-direct-plan-mutual-funds-guide-higher-returns-lower-expense-ratio)**.
-- Test your monthly compounding with the **[YieldNest SIP & Step-Up Calculator](/tools/sip-calculator)**.
+- Test your monthly compounding with the **[YieldNest SIP & Step-Up Calculator](/calculators/step-up-sip)**.
 
 ---
 

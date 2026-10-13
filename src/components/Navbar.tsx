@@ -1,9 +1,29 @@
-import React, { useState } from "react";
-import { Search, Menu, X, Calculator, HelpCircle, BookMarked, BookOpen, Compass, Users, Scale, Sparkles } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Search,
+  Menu,
+  X,
+  Calculator,
+  HelpCircle,
+  BookMarked,
+  BookOpen,
+  Compass,
+  Users,
+  Scale,
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
+  FileText,
+  ArrowRight,
+  ExternalLink,
+  DollarSign,
+} from "lucide-react";
 import { ArticleCategory, SiteSettings } from "../types";
 import { YieldNestLogo } from "./YieldNestLogo";
 import { LanguageSelector } from "./LanguageSelector";
 import { useLanguage } from "../context/LanguageContext";
+import { GLOSSARY_TERMS } from "../data/glossaryData";
+import { TOPIC_HUBS } from "../data/topicHubsData";
 
 interface NavbarProps {
   currentCategory: ArticleCategory | "all";
@@ -14,7 +34,18 @@ interface NavbarProps {
   onNavigateHome: () => void;
   isCalculatorView?: boolean;
   onNavigateCalculators?: () => void;
-  activeMenu?: "calculators" | "faq" | "glossary" | "guides" | "hubs" | "about" | "terms" | "categories" | "toolkit" | "none";
+  activeMenu?:
+    | "calculators"
+    | "faq"
+    | "glossary"
+    | "guides"
+    | "hubs"
+    | "about"
+    | "terms"
+    | "categories"
+    | "toolkit"
+    | "methodology"
+    | "none";
   onNavigateFAQ?: () => void;
   onNavigateGlossary?: () => void;
   onNavigateGuides?: () => void;
@@ -22,7 +53,22 @@ interface NavbarProps {
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
   onNavigateToolkit?: () => void;
+  onNavigateMethodology?: () => void;
+  onOpenCalculatorByUrl?: (url: string) => void;
+  onOpenHubBySlug?: (slug: string) => void;
 }
+
+const SITE_CALCULATORS = [
+  { name: "Direct vs Regular Calculator", url: "/calculators/direct-vs-regular", category: "Fees & TER Drag" },
+  { name: "Step-Up SIP Calculator", url: "/calculators/step-up-sip", category: "Compounding Growth" },
+  { name: "Cost of Delay Calculator", url: "/calculators/cost-of-delay", category: "Opportunity Cost" },
+  { name: "SIP vs Lumpsum Calculator", url: "/calculators/sip-vs-lumpsum", category: "Asset Deployment" },
+  { name: "SIP Compounding Calculator", url: "/calculators/sip", category: "Wealth Planning" },
+  { name: "Lumpsum Calculator", url: "/calculators/lumpsum", category: "One-Time Investment" },
+  { name: "SWP Withdrawal Calculator", url: "/calculators/swp", category: "Retirement Cashflow" },
+  { name: "Goal Planner Calculator", url: "/calculators/goal-planner", category: "Target Corpus" },
+  { name: "Capital Gains Tax Estimator", url: "/calculators/tax-estimator", category: "Section 112A Tax" },
+];
 
 export function Navbar({
   currentCategory,
@@ -40,76 +86,119 @@ export function Navbar({
   onNavigateAbout,
   onNavigateTerms,
   onNavigateToolkit,
+  onNavigateMethodology,
+  onOpenCalculatorByUrl,
+  onOpenHubBySlug,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const { t, isHindi } = useLanguage();
 
-  const categories: Array<{ id: ArticleCategory | "all"; label: string; href: string }> = [
-    { id: "all", label: t("nav.allResearch"), href: "/" },
-    { id: "Fund Comparison", label: t("nav.fundComparison"), href: "/category/fund-comparison" },
-    { id: "Performance Analysis", label: t("nav.performanceAnalysis"), href: "/category/performance-analysis" },
-    { id: "Market Trends", label: t("nav.marketTrends"), href: "/category/market-trends" },
-    { id: "Category Deep-Dive", label: t("nav.categoryDeepDive"), href: "/category/category-deep-dive" },
-    { id: "SIP Strategies", label: t("nav.sipTactics"), href: "/category/sip-strategies" },
-  ];
+  // Close search dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const menuTools = [
+  const handleLinkClick = (e: React.MouseEvent, action?: () => void, path?: string) => {
+    if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      setMobileMenuOpen(false);
+      setShowSearchDropdown(false);
+      if (action) action();
+      if (path) {
+        window.history.pushState({}, "", path);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+  };
+
+  // Instant Site-Wide Search Matches
+  const query = searchQuery.trim().toLowerCase();
+  const matchedCalculators = query.length >= 2
+    ? SITE_CALCULATORS.filter((c) => c.name.toLowerCase().includes(query) || c.category.toLowerCase().includes(query)).slice(0, 3)
+    : [];
+  const matchedHubs = query.length >= 2
+    ? TOPIC_HUBS.filter((h) => h.title.toLowerCase().includes(query) || h.keywords.toLowerCase().includes(query)).slice(0, 2)
+    : [];
+  const matchedGlossary = query.length >= 2
+    ? GLOSSARY_TERMS.filter((g) => g.term.toLowerCase().includes(query) || (g.abbreviation && g.abbreviation.toLowerCase().includes(query))).slice(0, 3)
+    : [];
+
+  const hasDirectMatches = matchedCalculators.length > 0 || matchedHubs.length > 0 || matchedGlossary.length > 0;
+
+  // Clear Main Navigation Menu Items
+  const primaryNavItems = [
     {
-      id: "toolkit" as const,
-      label: isHindi ? "सभी साधन (All Tools)" : "All Tools & Hubs",
-      href: "/toolkit",
-      icon: Sparkles,
-      onClick: onNavigateToolkit,
-      highlight: true,
-    },
-    {
-      id: "calculators" as const,
-      label: t("nav.calculators"),
+      id: "calculators",
+      label: "Calculators",
       href: "/calculators",
       icon: Calculator,
+      isActive: isCalculatorView || activeMenu === "calculators",
       onClick: onNavigateCalculators,
     },
     {
-      id: "guides" as const,
-      label: t("nav.guides"),
-      href: "/guides",
-      icon: BookOpen,
-      onClick: onNavigateGuides,
+      id: "fund-comparisons",
+      label: "Fund Comparisons",
+      href: "/category/fund-comparison",
+      icon: Scale,
+      isActive: currentCategory === "Fund Comparison" && !isCalculatorView,
+      onClick: () => onSelectCategory("Fund Comparison"),
     },
     {
-      id: "hubs" as const,
-      label: t("nav.topicHubs"),
-      href: "/hubs",
+      id: "sip",
+      label: "SIP Hub",
+      href: "/hub/sip-swp-stp",
+      icon: TrendingUp,
+      isActive: false,
+      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("sip-swp-stp") : onNavigateHubs?.()),
+    },
+    {
+      id: "costs",
+      label: "Costs & Fees",
+      href: "/hub/fees",
+      icon: DollarSign,
+      isActive: false,
+      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("fees") : onNavigateHubs?.()),
+    },
+    {
+      id: "risk",
+      label: "Risk & Analytics",
+      href: "/hub/safety-and-risk",
+      icon: ShieldCheck,
+      isActive: false,
+      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("safety-and-risk") : onNavigateHubs?.()),
+    },
+    {
+      id: "market-insights",
+      label: "Market Insights",
+      href: "/category/market-trends",
       icon: Compass,
-      onClick: onNavigateHubs,
+      isActive: currentCategory === "Market Trends" && !isCalculatorView,
+      onClick: () => onSelectCategory("Market Trends"),
     },
     {
-      id: "glossary" as const,
-      label: t("nav.glossary"),
+      id: "methodology",
+      label: "Methodology",
+      href: "/methodology",
+      icon: FileText,
+      isActive: activeMenu === "methodology",
+      onClick: onNavigateMethodology,
+    },
+    {
+      id: "glossary",
+      label: "Glossary",
       href: "/glossary",
       icon: BookMarked,
+      isActive: activeMenu === "glossary",
       onClick: onNavigateGlossary,
-    },
-    {
-      id: "faq" as const,
-      label: t("nav.faq"),
-      href: "/faq",
-      icon: HelpCircle,
-      onClick: onNavigateFAQ,
-    },
-    {
-      id: "about" as const,
-      label: t("nav.aboutUs"),
-      href: "/about",
-      icon: Users,
-      onClick: onNavigateAbout,
-    },
-    {
-      id: "terms" as const,
-      label: t("nav.terms"),
-      href: "/terms",
-      icon: Scale,
-      onClick: onNavigateTerms,
     },
   ];
 
@@ -119,230 +208,211 @@ export function Navbar({
       <div className="bg-[#1C1A17] text-stone-300 text-[10px] sm:text-[11px] font-mono-data py-1 px-3 border-b border-stone-800 flex items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
         <span className="truncate">
-          <strong className="text-stone-200">{isHindi ? "वैधानिक सूचना:" : "Statutory Notice:"}</strong> {t("nav.statutoryNotice")}
+          <strong className="text-stone-200">Statutory Notice:</strong> Educational &amp; research analytics only. Not registered investment advice.
         </span>
       </div>
 
-      {/* Main Centered Masthead */}
-      <div className="max-w-6xl mx-auto px-4 pt-3.5 sm:pt-5 pb-2.5 sm:pb-3 flex flex-col items-center justify-center relative">
-        {/* Language selector & Search bar pinned to top-right on desktop */}
-        <div className="absolute top-3.5 sm:top-5 right-4 hidden sm:flex items-center gap-2">
-          <LanguageSelector variant="header" align="right" />
-          <div className="relative w-44 lg:w-52">
+      {/* Main Masthead Container */}
+      <div className="max-w-6xl mx-auto px-4 pt-3.5 pb-2.5 sm:py-3.5 flex items-center justify-between gap-4 relative">
+        {/* Left: Brand Logo */}
+        <a
+          href="/"
+          onClick={(e) => handleLinkClick(e, onNavigateHome, "/")}
+          className="cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] text-inherit no-underline shrink-0"
+          title="YieldNest.online - Return to Homepage"
+        >
+          <YieldNestLogo size="md" showTagline={true} />
+        </a>
+
+        {/* Center / Right: Site-Wide Search & Controls */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-end max-w-xl">
+          {/* Site-Wide Search Input with Instant Results Dropdown */}
+          <div ref={searchContainerRef} className="relative w-full max-w-xs sm:max-w-sm">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#8C887B]" />
             <input
               type="text"
-              placeholder={t("nav.searchPlaceholder")}
+              placeholder={isHindi ? "खोजें: कैलकुलेटर, फंड, शब्द..." : "Search calculators, funds, metrics..."}
               value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#F0EEE6] text-xs rounded-full pl-8 pr-3 py-1.5 border border-transparent focus:border-[#C4C0B3] focus:bg-white focus:outline-none transition-all placeholder:text-[#9E9B90]"
+              onFocus={() => setShowSearchDropdown(true)}
+              onChange={(e) => {
+                onSearchChange(e.target.value);
+                setShowSearchDropdown(true);
+              }}
+              className="w-full bg-[#F0EEE6] text-xs rounded-full pl-8 pr-7 py-1.5 border border-transparent focus:border-[#C4C0B3] focus:bg-white focus:outline-none transition-all placeholder:text-[#9E9B90]"
             />
             {searchQuery && (
               <button
-                onClick={() => onSearchChange("")}
+                onClick={() => {
+                  onSearchChange("");
+                  setShowSearchDropdown(false);
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8C887B] hover:text-black text-xs font-mono"
               >
                 ✕
               </button>
             )}
-          </div>
-        </div>
 
-        {/* Mobile controls */}
-        <div className="w-full flex items-center justify-between sm:hidden mb-2 gap-2">
-          <LanguageSelector variant="header" align="left" />
-          <div className="relative flex-1">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8C887B]" />
-            <input
-              type="text"
-              placeholder={t("nav.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#F0EEE6] text-[11px] rounded-full pl-7 pr-3 py-1 border border-stone-200 focus:outline-none"
-            />
+            {/* Instant Site-Wide Search Results Dropdown */}
+            {showSearchDropdown && query.length >= 2 && hasDirectMatches && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-stone-200 shadow-xl overflow-hidden z-50 p-2 space-y-2 text-xs font-sans text-left">
+                {/* Calculators match */}
+                {matchedCalculators.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-mono-data font-bold text-emerald-800 uppercase px-2 pt-1">
+                      Calculators
+                    </div>
+                    {matchedCalculators.map((c) => (
+                      <a
+                        key={c.url}
+                        href={c.url}
+                        onClick={(e) =>
+                          handleLinkClick(e, () => onOpenCalculatorByUrl?.(c.url), c.url)
+                        }
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                      >
+                        <span className="font-medium group-hover:text-emerald-900">{c.name}</span>
+                        <span className="text-[10px] text-stone-500 font-mono-data">{c.category}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* Topic Hubs match */}
+                {matchedHubs.length > 0 && (
+                  <div className="space-y-1 border-t border-stone-100 pt-1">
+                    <div className="text-[10px] font-mono-data font-bold text-blue-800 uppercase px-2 pt-1">
+                      Topic Hubs
+                    </div>
+                    {matchedHubs.map((h) => (
+                      <a
+                        key={h.slug}
+                        href={`/hub/${h.slug}`}
+                        onClick={(e) =>
+                          handleLinkClick(e, () => onOpenHubBySlug?.(h.slug), `/hub/${h.slug}`)
+                        }
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                      >
+                        <span className="font-medium group-hover:text-blue-900">{h.title}</span>
+                        <span className="text-[10px] text-stone-500 font-mono-data">Hub</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* Glossary terms match */}
+                {matchedGlossary.length > 0 && (
+                  <div className="space-y-1 border-t border-stone-100 pt-1">
+                    <div className="text-[10px] font-mono-data font-bold text-amber-800 uppercase px-2 pt-1">
+                      Financial Glossary
+                    </div>
+                    {matchedGlossary.map((g) => (
+                      <a
+                        key={g.id}
+                        href={`/glossary#${g.id}`}
+                        onClick={(e) =>
+                          handleLinkClick(e, onNavigateGlossary, `/glossary#${g.id}`)
+                        }
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-stone-100 text-stone-800 no-underline cursor-pointer group"
+                      >
+                        <span className="font-medium group-hover:text-amber-900">{g.term}</span>
+                        <span className="text-[10px] text-stone-500 font-mono-data">{g.cluster}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          <LanguageSelector variant="header" align="right" />
+
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1 text-[#4A4740] hover:text-black shrink-0"
+            className="p-1.5 rounded-lg border border-stone-300 text-stone-800 hover:bg-stone-100 lg:hidden shrink-0 cursor-pointer"
             aria-label="Toggle navigation menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 text-stone-800" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
-
-        {/* Centered Site Logo */}
-        <a
-          href="/"
-          onClick={(e) => {
-            if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-              e.preventDefault();
-              onNavigateHome();
-            }
-          }}
-          className="cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99] text-center block text-inherit no-underline"
-          title="YieldNest.online - Return to Homepage"
-        >
-          <YieldNestLogo size="md" showTagline={true} />
-        </a>
       </div>
 
-      {/* Navigation Buttons: 2-Line Structured Button Format (No Horizontal Scrolling) */}
-      <nav className="w-full border-t border-[#EAE8E0] bg-[#FAF9F5] py-1.5 sm:py-2 px-2 sm:px-4 block">
-        <div className="max-w-6xl mx-auto space-y-1.5">
-          {/* Line 1: Research Categories Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-            <span className="text-[10px] font-mono-data font-semibold text-stone-400 uppercase tracking-wider mr-1 hidden xl:inline-block">
-              {t("nav.categoriesLabel")}
-            </span>
-            {categories.map((cat) => {
-              const isCatActive =
-                activeMenu === "none" && !isCalculatorView && currentCategory === cat.id;
-              return (
-                <a
-                  key={cat.id}
-                  href={cat.href}
-                  onClick={(e) => {
-                    if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                      e.preventDefault();
-                      if (onSelectCategory) {
-                        onSelectCategory(cat.id);
-                      } else {
-                        window.history.pushState({}, "", cat.href);
-                        window.dispatchEvent(new PopStateEvent("popstate"));
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }
-                    }
-                  }}
-                  className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-medium tracking-wide transition-all border shadow-2xs no-underline inline-flex items-center justify-center cursor-pointer ${
-                    isCatActive
-                      ? "bg-[#1A1A1A] text-white border-[#1A1A1A] font-semibold shadow-xs"
-                      : "bg-white border-[#E2DFD6] text-stone-700 hover:text-stone-950 hover:bg-[#F3EFE6] hover:border-stone-300"
-                  }`}
-                >
-                  {cat.label}
-                </a>
-              );
-            })}
-          </div>
-
-          {/* Line 2: Pages & Tools Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 pt-1 border-t border-stone-200/60">
-            <span className="text-[10px] font-mono-data font-semibold text-stone-400 uppercase tracking-wider mr-1 hidden xl:inline-block">
-              {t("nav.pagesToolsLabel")}
-            </span>
-            {menuTools.map((tool) => {
-              const Icon = tool.icon;
-              const isActive =
-                activeMenu === tool.id || (tool.id === "calculators" && isCalculatorView);
-              return (
-                <a
-                  key={tool.id}
-                  href={tool.href}
-                  onClick={(e) => {
-                    if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                      e.preventDefault();
-                      if (tool.onClick) {
-                        tool.onClick();
-                      } else {
-                        window.history.pushState({}, "", tool.href);
-                        window.dispatchEvent(new PopStateEvent("popstate"));
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }
-                    }
-                  }}
-                  className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[11px] sm:text-xs font-medium tracking-wide transition-all border shadow-2xs no-underline inline-flex items-center gap-1.5 cursor-pointer ${
-                    isActive
-                      ? "bg-emerald-800 text-white border-emerald-800 font-semibold shadow-xs"
-                      : "bg-white border-[#E2DFD6] text-stone-700 hover:text-stone-950 hover:bg-[#F3EFE6] hover:border-stone-300"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5 text-current shrink-0" />
-                  <span>{tool.label}</span>
-                </a>
-              );
-            })}
-          </div>
+      {/* Desktop Main Navigation Menu (Clean Typography & Zero-Pills) */}
+      <nav
+        aria-label="Primary Navigation"
+        className="hidden lg:block border-t border-[#EAE8E0] bg-[#FAF9F5] py-2 px-4"
+      >
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-1 xl:gap-2 flex-wrap">
+          {primaryNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.id}
+                href={item.href}
+                onClick={(e) => handleLinkClick(e, item.onClick, item.href)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium tracking-wide transition-all no-underline inline-flex items-center gap-1.5 cursor-pointer ${
+                  item.isActive
+                    ? "bg-[#1A1A1A] text-white font-semibold shadow-2xs"
+                    : "text-stone-700 hover:text-black hover:bg-[#F0EEE6]"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0 opacity-80" />
+                <span>{item.label}</span>
+              </a>
+            );
+          })}
         </div>
       </nav>
 
-      {/* Mobile Drawer (Clean Touch-Friendly Button Grid) */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="sm:hidden bg-[#FAF9F5] border-t border-[#EAE8E0] px-4 py-3 space-y-3 shadow-inner">
-          <div className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pb-1">
-            {t("nav.categoriesLabel")}
+        <div className="lg:hidden bg-[#FAF9F5] border-t border-[#EAE8E0] px-4 py-4 space-y-3 shadow-inner font-sans">
+          <div className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pb-1 border-b border-stone-200">
+            Main Menu
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {categories.map((cat) => (
-              <a
-                key={cat.id}
-                href={cat.href}
-                onClick={(e) => {
-                  if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                    e.preventDefault();
-                    if (onSelectCategory) {
-                      onSelectCategory(cat.id);
-                    } else {
-                      window.history.pushState({}, "", cat.href);
-                      window.dispatchEvent(new PopStateEvent("popstate"));
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                    setMobileMenuOpen(false);
-                  }
-                }}
-                className={`text-center px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline border ${
-                  activeMenu === "none" && !isCalculatorView && currentCategory === cat.id
-                    ? "bg-[#1A1A1A] text-white border-[#1A1A1A] font-semibold"
-                    : "bg-white border-stone-200 text-[#4A4740] hover:bg-[#EFECE3]"
-                }`}
-              >
-                {cat.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider pt-2 pb-1 border-t border-stone-200">
-            {t("nav.pagesToolsLabel")}
-          </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {menuTools.map((tool) => {
-              const Icon = tool.icon;
-              const isActive = activeMenu === tool.id || (tool.id === "calculators" && isCalculatorView);
+          <div className="grid grid-cols-2 gap-2">
+            {primaryNavItems.map((item) => {
+              const Icon = item.icon;
               return (
                 <a
-                  key={tool.id}
-                  href={tool.href}
-                  onClick={(e) => {
-                    if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) {
-                      e.preventDefault();
-                      if (tool.onClick) {
-                        tool.onClick();
-                      } else {
-                        window.history.pushState({}, "", tool.href);
-                        window.dispatchEvent(new PopStateEvent("popstate"));
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }
-                      setMobileMenuOpen(false);
-                    }
-                  }}
-                  className={`text-center px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline flex items-center justify-center gap-1.5 border ${
-                    isActive
-                      ? "bg-emerald-800 text-white border-emerald-800 font-semibold"
-                      : "bg-white border-stone-200 text-stone-800 hover:bg-[#EFECE3]"
+                  key={item.id}
+                  href={item.href}
+                  onClick={(e) => handleLinkClick(e, item.onClick, item.href)}
+                  className={`p-2 rounded-lg text-xs font-medium border flex items-center gap-2 no-underline cursor-pointer ${
+                    item.isActive
+                      ? "bg-[#1A1A1A] text-white border-black font-semibold"
+                      : "bg-white border-stone-200 text-stone-800 hover:bg-stone-100"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5 shrink-0" />
-                  <span>{tool.label}</span>
+                  <Icon className="w-3.5 h-3.5 shrink-0 text-stone-500" />
+                  <span className="truncate">{item.label}</span>
                 </a>
               );
             })}
           </div>
 
-          {/* Dedicated Language Selector inside mobile drawer */}
-          <div className="pt-2.5 pb-1 border-t border-stone-200 flex items-center justify-between">
-            <span className="text-[10px] font-mono-data text-stone-500 uppercase tracking-wider">
-              {isHindi ? "भाषा (Language)" : "Language"}
-            </span>
-            <LanguageSelector variant="pill" />
+          <div className="pt-2 border-t border-stone-200 flex items-center justify-between text-xs text-stone-600">
+            <a
+              href="/about"
+              onClick={(e) => handleLinkClick(e, onNavigateAbout, "/about")}
+              className="hover:underline text-stone-700"
+            >
+              About YieldNest
+            </a>
+            <a
+              href="/terms"
+              onClick={(e) => handleLinkClick(e, onNavigateTerms, "/terms")}
+              className="hover:underline text-stone-700"
+            >
+              Terms of Use
+            </a>
+            <a
+              href="/toolkit"
+              onClick={(e) => handleLinkClick(e, onNavigateToolkit, "/toolkit")}
+              className="hover:underline text-stone-700 font-semibold"
+            >
+              All Tools
+            </a>
           </div>
         </div>
       )}

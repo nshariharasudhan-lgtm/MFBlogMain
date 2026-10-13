@@ -74,6 +74,12 @@ Array.from(links).sort().forEach((link) => {
     link === "/" ||
     link === "/about" ||
     link === "/about-us" ||
+    link === "/methodology" ||
+    link === "/toolkit" ||
+    link === "/tools" ||
+    link === "/features" ||
+    link === "/all-features" ||
+    link === "/all-tools" ||
     link === "/terms" ||
     link === "/terms-and-conditions" ||
     link === "/terms-of-use" ||

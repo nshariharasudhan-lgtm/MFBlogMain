@@ -889,13 +889,11 @@ export function getTopicHubBySlug(slug: string): TopicHubData | undefined {
     (h) =>
       h.slug.toLowerCase() === clean ||
       h.id.toLowerCase() === clean ||
-      (clean === "safety" && h.id === "safety-and-risk") ||
-      (clean === "risk" && h.id === "safety-and-risk") ||
-      (clean === "tax" && h.id === "tax-and-elss") ||
-      (clean === "elss" && h.id === "tax-and-elss") ||
-      (clean === "sip" && h.id === "sip-swp-stp") ||
-      (clean === "swp" && h.id === "sip-swp-stp") ||
-      (clean === "categories" && h.id === "comparisons")
+      ((clean === "safety" || clean === "risk" || clean === "risk-and-analytics") && h.id === "safety-and-risk") ||
+      ((clean === "costs" || clean === "cost" || clean === "fees" || clean === "expense-ratio") && h.id === "fees") ||
+      ((clean === "compare" || clean === "comparisons" || clean === "fund-comparison" || clean === "categories") && h.id === "comparisons") ||
+      ((clean === "sip" || clean === "swp" || clean === "stp" || clean === "sip-basics") && h.id === "sip-swp-stp") ||
+      ((clean === "tax" || clean === "elss") && h.id === "tax-and-elss")
   );
 }
 

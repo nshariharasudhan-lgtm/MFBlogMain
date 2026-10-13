@@ -655,14 +655,22 @@ function injectArticle(template: string, article: any): string {
         },
         "datePublished": datePublished,
         "dateModified": dateModified,
+        "image": [
+          article.coverImage || `${CANONICAL_ORIGIN}/og-default.png`
+        ],
         "author": {
           "@type": "Organization",
           "name": "YieldNest Research Desk",
+          "url": `${CANONICAL_ORIGIN}/about`,
         },
         "publisher": {
           "@type": "Organization",
           "name": "YieldNest.online",
           "url": `${CANONICAL_ORIGIN}/`,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${CANONICAL_ORIGIN}/favicon.ico`,
+          },
         },
         "articleSection": article.category,
       },
@@ -909,6 +917,12 @@ ${TOPIC_HUBS.map((h) => `  <url>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/methodology</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>${CANONICAL_ORIGIN}/terms</loc>
@@ -2311,6 +2325,122 @@ export function injectToolkitDirectoryPage(template: string): string {
   return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
 }
 
+export function injectMethodologyPage(template: string): string {
+  const canonical = `${CANONICAL_ORIGIN}/methodology`;
+  const title = "Research Methodology & Data Sources | YieldNest.online";
+  const description = "Comprehensive mathematical formulas, regulatory data pipelines, benchmark selection standards, and calculator assumptions powering YieldNest.online.";
+
+  const schemaJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "@id": `${canonical}#webpage`,
+        "url": canonical,
+        "name": title,
+        "description": description,
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${CANONICAL_ORIGIN}/#website`,
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "YieldNest.online",
+          "url": CANONICAL_ORIGIN,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${CANONICAL_ORIGIN}/favicon.ico`,
+          },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": CANONICAL_ORIGIN,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Methodology & Data Sources",
+            "item": canonical,
+          },
+        ],
+      },
+    ],
+  });
+
+  let modified = template;
+  modified = modified.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);
+  modified = modified.replace(/<meta\s+name=["']description["'][\s\S]*?>/i, `<meta name="description" content="${description}" />`);
+  modified = modified.replace(/<link\s+rel=["']canonical["'][\s\S]*?>/i, `<link rel="canonical" href="${canonical}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:title["'][\s\S]*?>/i, `<meta property="og:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:description["'][\s\S]*?>/i, `<meta property="og:description" content="${description}" />`);
+  modified = modified.replace(/<meta\s+property=["']og:url["'][\s\S]*?>/i, `<meta property="og:url" content="${canonical}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:title["'][\s\S]*?>/i, `<meta name="twitter:title" content="${title}" />`);
+  modified = modified.replace(/<meta\s+name=["']twitter:description["'][\s\S]*?>/i, `<meta name="twitter:description" content="${description}" />`);
+
+  const schemaScript = `\n    <script type="application/ld+json" id="server-structured-data">\n${schemaJson}\n    </script>\n  `;
+  modified = modified.replace("</head>", `${schemaScript}</head>`);
+
+  const ssrBody = `<div class="max-w-4xl mx-auto px-4 py-12 font-serif-editorial">
+    <nav aria-label="Breadcrumb" style="font-size:0.75rem;font-family:monospace;margin-bottom:1.5rem;color:#78716c;">
+      <a href="/" style="color:#44403c;text-decoration:underline;">Home</a> / <span style="color:#1c1917;">Methodology & Data Sources</span>
+    </nav>
+    <header style="margin-bottom:2.5rem;border-bottom:1px solid #eae8e0;padding-bottom:1.5rem;">
+      <div style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:0.75rem;font-family:monospace;font-weight:600;margin-bottom:1rem;">
+        Institutional Research Standards &bull; Zero Brokerage &bull; Statutory AMFI Pipelines
+      </div>
+      <h1 style="font-size:2.5rem;font-weight:700;line-height:1.2;color:#1a1a1a;margin-bottom:1rem;">
+        Research Methodology &amp; Data Sources
+      </h1>
+      <p style="font-size:1.15rem;color:#57534e;line-height:1.6;">
+        Complete mathematical formulas, regulatory data pipelines, benchmark selection standards, and calculator assumptions powering YieldNest.online.
+      </p>
+    </header>
+    <article style="line-height:1.8;color:#292524;font-size:1rem;">
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">1. Plain-Language Summary: How YieldNest Works</h2>
+      <p>YieldNest is an independent analytical research platform built exclusively for Indian mutual fund investors. We operate under three non-negotiable safeguards:</p>
+      <ul>
+        <li><strong>Zero Commissions:</strong> We hold no AMFI distributor code (ARN), sell zero financial products, and accept zero sponsored placement fees.</li>
+        <li><strong>Statutory Data Only:</strong> All performance tables, expense ratios, portfolio allocations, and scheme categorizations are sourced directly from AMFI and SEBI daily disclosures.</li>
+        <li><strong>Transparent Math:</strong> Every calculator uses verifiable formulas with explicit assumptions. No promotional projections.</li>
+      </ul>
+
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">2. Primary Data Sources &amp; Refresh Frequencies</h2>
+      <p>Our analytics engine connects to official regulatory pipelines:</p>
+      <ul>
+        <li><strong>AMFI NAV Disclosures:</strong> End-of-day NAVs for all active Indian mutual fund schemes fetched daily at 23:00 IST.</li>
+        <li><strong>SEBI Scheme Categorization:</strong> Bi-annual market cap rankings and scheme classifications adhering to SEBI circulars.</li>
+        <li><strong>NSE/BSE Indices:</strong> Benchmark TRI (Total Return Index) values for objective alpha and tracking error measurement.</li>
+        <li><strong>RBI Macro Benchmarks:</strong> 91-day T-Bill rates and repo rates used as risk-free rate anchors for Sharpe and Sortino ratios.</li>
+      </ul>
+
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">3. Mathematical Calculation Engine</h2>
+      <p>All quantitative metrics follow standard financial econometric principles:</p>
+      <ul>
+        <li><strong>Rolling Returns:</strong> Daily rolled 3-year (756 trading days) and 5-year (1,260 trading days) compound annual growth rates (CAGR) to eliminate start-date bias.</li>
+        <li><strong>Standard Deviation &amp; Volatility:</strong> Annualized sample standard deviation of monthly logarithmic returns.</li>
+        <li><strong>Sharpe &amp; Sortino Ratios:</strong> Excess return over the RBI 91-day T-Bill yield divided by total volatility (Sharpe) or downside semi-deviation (Sortino).</li>
+        <li><strong>Expense Ratio Drag:</strong> Future value differential between Direct Plan and Regular Plan compounding over 10, 20, and 30-year horizons.</li>
+        <li><strong>Step-Up SIP Amortization:</strong> Monthly compounding adjusted for annual SIP step-up percentage increases.</li>
+      </ul>
+
+      <h2 style="font-size:1.5rem;margin-top:2rem;margin-bottom:0.75rem;color:#1a1a1a;">4. Statutory Disclaimer &amp; Limitations</h2>
+      <p>YieldNest.online is an educational and analytical research publication. We are not registered with SEBI as an Investment Adviser or Research Analyst. Mutual fund investments are subject to market risks. Please read all scheme-related documents carefully before investing. Historical performance and rolling returns are strictly illustrative and do not guarantee future results.</p>
+    </article>
+    ${buildSharedFooterHtml()}
+  </div>`;
+
+  return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
+}
+
 export function buildLlmsTxtString(articles: any[]): string {
   const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
   const validArticles = articles.filter((a) => !aliasSourceSlugs.has(a.slug));
@@ -2674,6 +2804,14 @@ async function runPrerender() {
     fs.writeFileSync(path.join(tDir, "index.html"), toolkitHtml, "utf-8");
   }
   console.log(`  ✓ Prerendered /toolkit, /tools, /features (Canonical: ${CANONICAL_ORIGIN}/toolkit)`);
+
+  // 3c-6. Prerender Methodology & Data Sources Page (/methodology)
+  const methodologyHtml = injectMethodologyPage(baseHtml);
+  const methodologyDir = path.join(distDir, "methodology");
+  fs.mkdirSync(methodologyDir, { recursive: true });
+  fs.writeFileSync(path.join(distDir, "methodology.html"), methodologyHtml, "utf-8");
+  fs.writeFileSync(path.join(methodologyDir, "index.html"), methodologyHtml, "utf-8");
+  console.log(`  ✓ Prerendered /methodology (Canonical: ${CANONICAL_ORIGIN}/methodology)`);
 
   // 3d. Generate static HTML fallbacks for all legacy/typo slugs so direct file access never 404s
   for (const alias of LEGACY_ALIASES) {

@@ -3,12 +3,12 @@
   "version": 1,
   "description": "Dedicated behavioral intelligence database - strictly isolated from Supabase CMS",
   "createdAt": "2026-10-06T00:44:23.194Z",
-  "lastUpdated": "2026-10-13T01:10:41.715Z",
+  "lastUpdated": "2026-10-13T01:39:28.896Z",
   "summary": {
     "totalSessions": 1421,
-    "totalPageViews": 4891,
+    "totalPageViews": 4892,
     "totalToolInteractions": 2340,
-    "totalActiveReadingMinutes": 8773.099999999944,
+    "totalActiveReadingMinutes": 8788.799999999907,
     "avgDwellSecondsPerSession": 195
   },
   "contentAffinity": {
@@ -291,13 +291,13 @@
     {
       "sessionId": "sess-mv5ykwws-gcj4a",
       "startedAt": "2026-10-13T00:44:41.028Z",
-      "lastActiveAt": "2026-10-13T01:10:39.714Z",
+      "lastActiveAt": "2026-10-13T01:39:26.896Z",
       "deviceType": "mobile",
       "pagesVisited": [
         "/"
       ],
       "toolsUsed": [],
-      "totalDurationSeconds": 1550
+      "totalDurationSeconds": 2595
     },
     {
       "sessionId": "sess-9021",

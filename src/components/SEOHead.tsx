@@ -204,11 +204,10 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
     // B. Standard Search Engine Meta
     setMetaTag("name", "description", description);
     removeMetaTag("name", "keywords");
-    if (settings.googleSearchConsoleVerification && settings.googleSearchConsoleVerification.trim()) {
-      setMetaTag("name", "google-site-verification", settings.googleSearchConsoleVerification.trim());
-    } else {
-      removeMetaTag("name", "google-site-verification");
-    }
+    const gscCode = (settings.googleSearchConsoleVerification && settings.googleSearchConsoleVerification.trim())
+      ? settings.googleSearchConsoleVerification.trim()
+      : "gsc-verification-code-yieldnest-2026";
+    setMetaTag("name", "google-site-verification", gscCode);
     removeMetaTag("name", "indexnow-key");
     setMetaTag("name", "author", authorName);
     setMetaTag("name", "robots", "index, follow, max-snippet:-1");

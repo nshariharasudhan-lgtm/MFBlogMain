@@ -17,6 +17,7 @@ interface FooterProps {
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
   onNavigateToolkit?: () => void;
+  onNavigateMethodology?: () => void;
 }
 
 export function Footer({
@@ -31,6 +32,7 @@ export function Footer({
   onNavigateAbout,
   onNavigateTerms,
   onNavigateToolkit,
+  onNavigateMethodology,
 }: FooterProps) {
   const { t, isHindi } = useLanguage();
   const categories: ArticleCategory[] = [
@@ -79,7 +81,7 @@ export function Footer({
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-200/70 text-stone-800 text-[11px] font-mono-data">
               <span>Status: Independent Investor Education • yieldnest.online</span>
             </div>
-            <div className="flex items-center gap-2 pt-1 text-[11px] text-stone-600 font-mono-data">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-stone-600 font-mono-data flex-wrap">
               <a
                 href="/about"
                 onClick={(e) => navigateTo(e, "/about", onNavigateAbout)}
@@ -89,11 +91,19 @@ export function Footer({
               </a>
               <span>•</span>
               <a
+                href="/methodology"
+                onClick={(e) => navigateTo(e, "/methodology", onNavigateMethodology)}
+                className="hover:text-stone-900 underline font-medium"
+              >
+                Methodology &amp; Data Sources
+              </a>
+              <span>•</span>
+              <a
                 href="/terms"
                 onClick={(e) => navigateTo(e, "/terms", onNavigateTerms)}
                 className="hover:text-stone-900 underline font-medium"
               >
-                Terms &amp; Conditions
+                Terms of Use
               </a>
             </div>
           </div>

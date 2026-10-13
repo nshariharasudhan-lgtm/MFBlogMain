@@ -37,6 +37,7 @@ import { RedemptionChecklistPage } from "./components/guides/RedemptionChecklist
 import { GuidesIndexPage } from "./components/guides/GuidesIndexPage";
 import { AboutUsPage } from "./components/AboutUsPage";
 import { TermsAndConditionsPage } from "./components/TermsAndConditionsPage";
+import { MethodologyPage } from "./components/MethodologyPage";
 import { InvestorCommandDeck } from "./components/InvestorCommandDeck";
 import { ToolkitDirectoryPage } from "./components/ToolkitDirectoryPage";
 import { CategoryPage } from "./components/CategoryPage";
@@ -251,7 +252,7 @@ function YieldNestApp() {
   const [selectedHub, setSelectedHub] = useState<TopicHubData | null>(null);
   const [isHubsIndexView, setIsHubsIndexView] = useState(false);
   const [isToolkitView, setIsToolkitView] = useState(false);
-  const [activeStaticPage, setActiveStaticPage] = useState<"about" | "terms" | null>(null);
+  const [activeStaticPage, setActiveStaticPage] = useState<"about" | "terms" | "methodology" | null>(null);
 
   // Initialize and handle URL routing (Instant zero-delay resolution from preloaded state)
   useEffect(() => {
@@ -318,7 +319,8 @@ function YieldNestApp() {
       path !== "/terms" &&
       path !== "/terms-and-conditions" &&
       path !== "/terms-of-use" &&
-      path !== "/terms-of-service"
+      path !== "/terms-of-service" &&
+      path !== "/methodology"
     ) {
       setActiveStaticPage(null);
     }
@@ -392,6 +394,16 @@ function YieldNestApp() {
       setIsAdminView(false);
       setSelectedHub(null);
       setIsHubsIndexView(false);
+      return;
+    } else if (path === "/methodology") {
+      setActiveStaticPage("methodology");
+      setPlaceholderView(null);
+      setIsCalculatorView(false);
+      setSelectedArticle(null);
+      setIsAdminView(false);
+      setSelectedHub(null);
+      setIsHubsIndexView(false);
+      setIsToolkitView(false);
       return;
     }
 
@@ -860,6 +872,20 @@ function YieldNestApp() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Navigate to Methodology & Data Sources Page
+  const handleNavigateMethodology = () => {
+    setActiveStaticPage("methodology");
+    setPlaceholderView(null);
+    setIsCalculatorView(false);
+    setSelectedArticle(null);
+    setIsAdminView(false);
+    setSelectedHub(null);
+    setIsHubsIndexView(false);
+    setIsToolkitView(false);
+    window.history.pushState({}, "", "/methodology");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Navigate to Master Toolkit Directory
   const handleNavigateToolkit = () => {
     setIsToolkitView(true);
@@ -1035,7 +1061,9 @@ function YieldNestApp() {
             : null
         }
         urlPath={
-          selectedHub
+          activeStaticPage === "methodology"
+            ? "/methodology"
+            : selectedHub
             ? `/hub/${selectedHub.slug}`
             : isHubsIndexView
             ? "/hubs"
@@ -1052,7 +1080,9 @@ function YieldNestApp() {
             : "/"
         }
         customTitle={
-          selectedHub
+          activeStaticPage === "methodology"
+            ? "Research Methodology & Data Sources | YieldNest.online"
+            : selectedHub
             ? selectedHub.metaTitle
             : isHubsIndexView
             ? "Mutual Fund Topic Hubs: Systematic Knowledge Clusters | YieldNest"
@@ -1067,7 +1097,9 @@ function YieldNestApp() {
             : undefined
         }
         customDescription={
-          selectedHub
+          activeStaticPage === "methodology"
+            ? "Independent research methodology, statutory AMFI data pipelines, rolling return formulas, and mathematical models powering YieldNest mutual fund analytics."
+            : selectedHub
             ? selectedHub.metaDescription
             : isHubsIndexView
             ? "Explore our comprehensive editorial knowledge hubs organized by core investment clusters: Basics, Safety & Risk, Tax & ELSS, Fees, Redemption, SIP, and Comparisons."
@@ -1082,7 +1114,9 @@ function YieldNestApp() {
             : undefined
         }
         customKeywords={
-          selectedHub
+          activeStaticPage === "methodology"
+            ? "mutual fund methodology, AMFI data pipeline, rolling return calculation, TER compounding formula, YieldNest research"
+            : selectedHub
             ? selectedHub.keywords
             : isHubsIndexView
             ? "mutual fund topics, mutual fund clusters, SEBI investment guide, AMFI topic hubs, mutual fund basics"
@@ -1239,6 +1273,59 @@ function YieldNestApp() {
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
         />
+      ) : activeStaticPage === "methodology" ? (
+        /* Full Institutional Methodology & Data Sources Page */
+        <>
+          <Navbar
+            currentCategory="all"
+            onSelectCategory={(cat) => {
+              setActiveStaticPage(null);
+              handleSelectCategory(cat);
+            }}
+            onSearchChange={setSearchQuery}
+            searchQuery={searchQuery}
+            settings={settings}
+            onNavigateHome={handleBackToHome}
+            isCalculatorView={false}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            activeMenu="methodology"
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+          <main className="flex-1">
+            <MethodologyPage
+              onNavigateHome={handleBackToHome}
+              onNavigateCalculators={(url) => {
+                setActiveStaticPage(null);
+                handleOpenCalculators(url);
+              }}
+              onNavigateHub={(slug) => {
+                setActiveStaticPage(null);
+                handleNavigateHub(slug);
+              }}
+            />
+          </main>
+          <Footer
+            settings={settings}
+            onSelectCategory={handleSelectCategory}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            onNavigateCalculator={handleOpenCalculators}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+        </>
       ) : placeholderView ? (
         placeholderView === "faq" ? (
           /* Full Interactive FAQ Page */
@@ -1524,6 +1611,7 @@ function YieldNestApp() {
               onNavigateAbout={handleNavigateAbout}
               onNavigateTerms={handleNavigateTerms}
               onNavigateToolkit={handleNavigateToolkit}
+              onNavigateMethodology={handleNavigateMethodology}
             />
           </>
         )
@@ -1563,6 +1651,7 @@ function YieldNestApp() {
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
             onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
           />
         </>
       ) : currentCategory !== "all" ? (
@@ -1607,6 +1696,7 @@ function YieldNestApp() {
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
             onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
           />
 
           <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-10">
@@ -1676,6 +1766,7 @@ function YieldNestApp() {
             onNavigateAbout={handleNavigateAbout}
             onNavigateTerms={handleNavigateTerms}
             onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
           />
         </>
       )}

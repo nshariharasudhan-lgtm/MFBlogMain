@@ -14,6 +14,7 @@ import {
   buildLlmsFullString,
   buildSitemapXmlString,
   injectToolkitDirectoryPage,
+  injectMethodologyPage,
 } from "./scripts/prerender";
 import {
   initAnalyticsDatabase,
@@ -80,7 +81,7 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Google Search Console verification endpoint - strictly serves GOOGLE_VERIFICATION_FILENAME only
+// Google Search Console verification endpoint - handles exact env filename or wildcard google[hash].html
 const GOOGLE_VERIFICATION_FILENAME = (process.env.GOOGLE_VERIFICATION_FILENAME || "").trim();
 if (GOOGLE_VERIFICATION_FILENAME) {
   const cleanFilename = GOOGLE_VERIFICATION_FILENAME.startsWith("/")
@@ -91,6 +92,11 @@ if (GOOGLE_VERIFICATION_FILENAME) {
     return res.send(`google-site-verification: ${path.basename(cleanFilename)}`);
   });
 }
+app.get(/^\/google([a-zA-Z0-9]+)\.html$/, (req, res) => {
+  const code = req.params[0];
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  return res.send(`google-site-verification: google${code}.html`);
+});
 
 // Bing / IndexNow protocol verification endpoint
 const INDEXNOW_KEY = "caef2d2b54404d86b8fecc69ca144cfc";
@@ -2516,6 +2522,7 @@ const KNOWN_SPA_PREFIXES = [
   "/terms-and-conditions",
   "/terms-of-use",
   "/terms-of-service",
+  "/methodology",
   "/admin",
   "/category",
   "/article",
@@ -2626,6 +2633,24 @@ function setupProductionRoutes() {
     } catch (err) {
       return next(err);
     }
+  });
+
+  // 7. Methodology & Data Sources SSR
+  app.get(["/methodology", "/methodology.html"], async (_req, res, next) => {
+    try {
+      if (!fs.existsSync(indexPath)) return next();
+      let html = fs.readFileSync(indexPath, "utf-8");
+      html = injectMethodologyPage(html);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // 8. Legacy redirect for /tools/sip-calculator
+  app.get(["/tools/sip-calculator", "/tool/sip-calculator"], (_req, res) => {
+    return res.redirect(301, "/calculators/step-up-sip");
   });
 
   app.use(express.static(distPath));
@@ -2770,7 +2795,26 @@ async function startDevServer() {
     }
   });
 
-  // 7. Real 404 for unknown HTML routes in development (Prevents Soft 404s)
+  // 7. Methodology & Data Sources SSR
+  app.get(["/methodology", "/methodology.html"], async (req, res, next) => {
+    try {
+      const indexHtmlPath = path.join(__dirname, "index.html");
+      let html = fs.readFileSync(indexHtmlPath, "utf-8");
+      html = injectMethodologyPage(html);
+      html = await vite.transformIndexHtml(req.originalUrl, html);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // 8. Legacy redirect for /tools/sip-calculator
+  app.get(["/tools/sip-calculator", "/tool/sip-calculator"], (_req, res) => {
+    return res.redirect(301, "/calculators/step-up-sip");
+  });
+
+  // 9. Real 404 for unknown HTML routes in development (Prevents Soft 404s)
   app.use(async (req, res, next) => {
     if (req.method !== "GET") return next();
     if (

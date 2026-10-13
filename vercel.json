@@ -108,6 +108,16 @@
       "source": "/article/best-mutual-funds-india-performance-analysis-2024",
       "destination": "/article/best-mutual-funds-india-2026-data-analysis",
       "permanent": true
+    },
+    {
+      "source": "/tools/sip-calculator",
+      "destination": "/calculators/step-up-sip",
+      "permanent": true
+    },
+    {
+      "source": "/tool/sip-calculator",
+      "destination": "/calculators/step-up-sip",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -152,6 +162,14 @@
       "destination": "/api"
     },
     {
+      "source": "/methodology",
+      "destination": "/api"
+    },
+    {
+      "source": "/google:code.html",
+      "destination": "/api"
+    },
+    {
       "source": "/tools",
       "destination": "/api"
     },
@@ -188,7 +206,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/(toolkit|tools|features|all-features|all-tools|calculators|calculator|faq|glossary|guides|hubs|hub|topics|topic|admin)",
+      "source": "/(toolkit|tools|features|all-features|all-tools|calculators|calculator|faq|glossary|guides|hubs|hub|topics|topic|admin|methodology)",
       "destination": "/index.html"
     },
     {
