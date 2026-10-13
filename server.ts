@@ -8,7 +8,13 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { INITIAL_ARTICLES } from "./src/lib/seedData";
-import { LEGACY_ALIASES, buildLlmsTxtString, buildLlmsFullString } from "./scripts/prerender";
+import {
+  LEGACY_ALIASES,
+  buildLlmsTxtString,
+  buildLlmsFullString,
+  buildSitemapXmlString,
+  injectToolkitDirectoryPage,
+} from "./scripts/prerender";
 import {
   initAnalyticsDatabase,
   recordAnalyticsEvent,
@@ -1652,197 +1658,8 @@ app.delete("/api/posts/:id", requireAdminAuth, async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// Sitemap & LLMs Generation & Sync
+// RSS Feed Generation
 // -------------------------------------------------------------
-function buildSitemapXmlString(articles: any[]): string {
-  const today = new Date().toISOString().split("T")[0];
-  const categories = Object.keys(CATEGORY_META);
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url>
-    <loc>https://www.yieldnest.online/</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/faq</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/glossary</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/guides</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/guides/how-to-choose-a-mutual-fund</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/guides/redemption-checklist</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/sip</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/step-up-sip</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/lumpsum</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/swp</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/goal-planner</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/tax-estimator</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/direct-vs-regular</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/cost-of-delay</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/calculators/sip-vs-lumpsum</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hubs</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/basics</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/safety-and-risk</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/tax-and-elss</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/fees</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/redemption</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/sip-swp-stp</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/hub/comparisons</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/about</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yieldnest.online/terms</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-${categories
-  .map(
-    (cat) => `  <url>
-    <loc>https://www.yieldnest.online/category/${cat}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>`
-  )
-  .join("\n")}
-${articles
-  .map((art) => {
-    const rawDate = art.updatedAt || art.publishedAt || today;
-    const lastMod = rawDate.split("T")[0];
-    return `  <url>
-    <loc>https://www.yieldnest.online/article/${encodeURIComponent(art.slug)}</loc>
-    <lastmod>${lastMod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>`;
-  })
-  .join("\n")}
-</urlset>`;
-}
 
 function buildRssXmlString(articles: any[]): string {
   const siteUrl = "https://www.yieldnest.online";
@@ -1941,7 +1758,16 @@ app.get("/sitemap.xml", async (_req, res) => {
     res.setHeader("Cache-Control", "public, max-age=1800, s-maxage=1800");
     return res.status(200).send(xml);
   } catch (err: any) {
-    console.error("Failed to generate sitemap.xml:", err);
+    console.error("Failed to generate sitemap.xml dynamically, falling back to static file:", err);
+    const publicSitemapPath = path.join(__dirname, "public", "sitemap.xml");
+    const distSitemapPath = path.join(__dirname, "dist", "sitemap.xml");
+    if (fs.existsSync(publicSitemapPath)) {
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      return res.sendFile(publicSitemapPath);
+    } else if (fs.existsSync(distSitemapPath)) {
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      return res.sendFile(distSitemapPath);
+    }
     return res.status(500).send("Error generating sitemap");
   }
 });
@@ -2665,11 +2491,19 @@ function renderNotFoundHtml(html: string, attemptedUrl: string): string {
 // Routing & Server Setup
 // -------------------------------------------------------------
 const KNOWN_SPA_PREFIXES = [
+  "/toolkit",
+  "/tools",
+  "/features",
+  "/all-features",
+  "/all-tools",
   "/calculators",
   "/calculator",
+  "/calculator-suite",
+  "/calculators-suite",
   "/faq",
   "/glossary",
   "/guides",
+  "/guide",
   "/how-to-choose-a-mutual-fund",
   "/redemption-checklist",
   "/hubs",
@@ -2774,6 +2608,19 @@ function setupProductionRoutes() {
       if (!fs.existsSync(indexPath)) return next();
       let html = fs.readFileSync(indexPath, "utf-8");
       html = injectTermsMeta(html);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // 6. Investor Toolkit & Features Directory SSR
+  app.get(["/toolkit", "/tools", "/features", "/all-features", "/all-tools"], async (_req, res, next) => {
+    try {
+      if (!fs.existsSync(indexPath)) return next();
+      let html = fs.readFileSync(indexPath, "utf-8");
+      html = injectToolkitDirectoryPage(html);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.status(200).send(html);
     } catch (err) {
@@ -2909,7 +2756,21 @@ async function startDevServer() {
     }
   });
 
-  // 6. Real 404 for unknown HTML routes in development (Prevents Soft 404s)
+  // 6. Investor Toolkit & Features Directory SSR
+  app.get(["/toolkit", "/tools", "/features", "/all-features", "/all-tools"], async (req, res, next) => {
+    try {
+      const indexHtmlPath = path.join(__dirname, "index.html");
+      let html = fs.readFileSync(indexHtmlPath, "utf-8");
+      html = injectToolkitDirectoryPage(html);
+      html = await vite.transformIndexHtml(req.originalUrl, html);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(200).send(html);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // 7. Real 404 for unknown HTML routes in development (Prevents Soft 404s)
   app.use(async (req, res, next) => {
     if (req.method !== "GET") return next();
     if (

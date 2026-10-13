@@ -779,7 +779,7 @@ function injectArticle(template: string, article: any): string {
   return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
 }
 
-function buildSitemapXmlString(articles: any[]): string {
+export function buildSitemapXmlString(articles: any[]): string {
   const today = new Date().toISOString().split("T")[0];
   const categories = Object.keys(CATEGORY_META);
   const aliasSourceSlugs = new Set(LEGACY_ALIASES.map((a) => a.sourceSlug));
@@ -926,7 +926,7 @@ ${categories
   </url>`
   )
   .join("\n")}
-${articles
+${sitemapArticles
   .map((art) => {
     const rawDate = art.updatedAt || art.publishedAt || today;
     const lastMod = rawDate.split("T")[0];
@@ -2212,7 +2212,7 @@ function injectTermsPage(template: string): string {
   return modified.replace('<div id="root"></div>', `<div id="root">${ssrBody}</div>`);
 }
 
-function injectToolkitDirectoryPage(template: string): string {
+export function injectToolkitDirectoryPage(template: string): string {
   const canonical = `${CANONICAL_ORIGIN}/toolkit`;
   const title = "YieldNest Investor Toolkit: Calculators, Checklists & Regulatory Hubs Directory";
   const description = "Complete directory of YieldNest tools: 7 mutual fund calculators, due diligence checklists, fund selection frameworks, 7 SEBI regulatory topic hubs, and investor glossary.";
@@ -2240,7 +2240,7 @@ function injectToolkitDirectoryPage(template: string): string {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": CANONICAL_ORIGIN,
+            "item": `${CANONICAL_ORIGIN}/`,
           },
           {
             "@type": "ListItem",
@@ -2675,22 +2675,7 @@ async function runPrerender() {
   }
   console.log(`  ✓ Prerendered /toolkit, /tools, /features (Canonical: ${CANONICAL_ORIGIN}/toolkit)`);
 
-  // 3d. Generate static HTML fallbacks for legacy/typo slugs so direct file access never 404s
-  const LEGACY_ALIASES = [
-    {
-      sourceSlug: "direct-vs-regular-mutual-funds-charges-commissions-compissions",
-      targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
-    },
-    {
-      sourceSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market-volatility",
-      targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
-    },
-    {
-      sourceSlug: "total-expense-ratio-ter-breakdown-impact-sip-returns",
-      targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
-    },
-  ];
-
+  // 3d. Generate static HTML fallbacks for all legacy/typo slugs so direct file access never 404s
   for (const alias of LEGACY_ALIASES) {
     const targetArt = articles.find((a) => a.slug === alias.targetSlug);
     if (targetArt) {

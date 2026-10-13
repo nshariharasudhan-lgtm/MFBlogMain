@@ -204,7 +204,11 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
     // B. Standard Search Engine Meta
     setMetaTag("name", "description", description);
     removeMetaTag("name", "keywords");
-    removeMetaTag("name", "google-site-verification");
+    if (settings.googleSearchConsoleVerification && settings.googleSearchConsoleVerification.trim()) {
+      setMetaTag("name", "google-site-verification", settings.googleSearchConsoleVerification.trim());
+    } else {
+      removeMetaTag("name", "google-site-verification");
+    }
     removeMetaTag("name", "indexnow-key");
     setMetaTag("name", "author", authorName);
     setMetaTag("name", "robots", "index, follow, max-snippet:-1");
@@ -313,7 +317,7 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: canonicalOrigin,
+          item: `${canonicalOrigin}/`,
         },
         {
           "@type": "ListItem",
@@ -386,11 +390,16 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
         "author": {
           "@type": "Organization",
           "name": "YieldNest Research Desk",
+          "url": `${canonicalOrigin}/about`,
         },
         publisher: {
           "@type": "Organization",
           "name": settings.siteName,
-          "url": canonicalOrigin,
+          "url": `${canonicalOrigin}/`,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${canonicalOrigin}/favicon.ico`,
+          },
         },
         mainEntityOfPage: {
           "@type": "WebPage",
@@ -440,7 +449,7 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
                 "@type": "ListItem",
                 position: 1,
                 name: "Home",
-                item: canonicalOrigin,
+                item: `${canonicalOrigin}/`,
               },
               {
                 "@type": "ListItem",

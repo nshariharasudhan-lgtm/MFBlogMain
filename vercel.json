@@ -43,6 +43,71 @@
       "source": "/article/total-expense-ratio-ter-breakdown-impact-sip-returns",
       "destination": "/article/why-total-expense-ratio-ter-is-important-for-investors",
       "permanent": true
+    },
+    {
+      "source": "/article/direct-vs-regular-plans-true-cost-distributor-commissions",
+      "destination": "/article/direct-vs-regular-mutual-funds-charges-commissions-compounding",
+      "permanent": true
+    },
+    {
+      "source": "/article/direct-vs-regular-mutual-funds-difference",
+      "destination": "/article/direct-vs-regular-mutual-funds-charges-commissions-compounding",
+      "permanent": true
+    },
+    {
+      "source": "/article/total-expense-ratio-compounding-cost-drag-10-20-30-years",
+      "destination": "/article/why-total-expense-ratio-ter-is-important-for-investors",
+      "permanent": true
+    },
+    {
+      "source": "/article/what-is-expense-ratio-impact-on-returns",
+      "destination": "/article/why-total-expense-ratio-ter-is-important-for-investors",
+      "permanent": true
+    },
+    {
+      "source": "/article/sip-vs-lump-sum-which-is-better",
+      "destination": "/article/sip-vs-lumpsum-quantitative-return-comparison-market-cycles",
+      "permanent": true
+    },
+    {
+      "source": "/article/index-fund-vs-active-mutual-fund-india",
+      "destination": "/article/index-funds-vs-active-funds-india-tracking-error-alpha-decay",
+      "permanent": true
+    },
+    {
+      "source": "/article/large-cap-vs-large-and-mid-cap-funds",
+      "destination": "/article/large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+      "permanent": true
+    },
+    {
+      "source": "/article/large-cap-vs-mid-cap-vs-small-cap-difference",
+      "destination": "/article/large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+      "permanent": true
+    },
+    {
+      "source": "/article/flexi-cap-vs-large-cap-difference",
+      "destination": "/article/large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
+      "permanent": true
+    },
+    {
+      "source": "/article/mid-cap-vs-small-cap-funds-risk-return",
+      "destination": "/article/mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
+      "permanent": true
+    },
+    {
+      "source": "/article/how-mutual-fund-capital-gains-are-taxed-equity-vs-debt",
+      "destination": "/article/mutual-fund-taxation-india-guide",
+      "permanent": true
+    },
+    {
+      "source": "/article/are-mutual-funds-tax-free-india-guide",
+      "destination": "/article/mutual-fund-taxation-india-guide",
+      "permanent": true
+    },
+    {
+      "source": "/article/best-mutual-funds-india-performance-analysis-2024",
+      "destination": "/article/best-mutual-funds-india-2026-data-analysis",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -83,6 +148,18 @@
       "destination": "/api"
     },
     {
+      "source": "/toolkit",
+      "destination": "/api"
+    },
+    {
+      "source": "/tools",
+      "destination": "/api"
+    },
+    {
+      "source": "/features",
+      "destination": "/api"
+    },
+    {
       "source": "/llms-full.txt",
       "destination": "/llms-full.txt"
     },
@@ -111,11 +188,11 @@
       "destination": "/index.html"
     },
     {
-      "source": "/(calculators|calculator|faq|glossary|guides|hubs|hub|topics|topic|admin)",
+      "source": "/(toolkit|tools|features|all-features|all-tools|calculators|calculator|faq|glossary|guides|hubs|hub|topics|topic|admin)",
       "destination": "/index.html"
     },
     {
-      "source": "/(calculators|calculator|guides|hub|topic|admin)/:path*",
+      "source": "/(calculators|calculator|guides|hub|topic|hubs|topics|admin)/:path*",
       "destination": "/index.html"
     }
   ],

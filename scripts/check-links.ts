@@ -41,7 +41,12 @@ const validRoutes = new Set([
   "/about-us",
   "/terms",
   "/terms-and-conditions",
-  "/admin"
+  "/admin",
+  "/toolkit",
+  "/tools",
+  "/features",
+  "/all-features",
+  "/all-tools"
 ]);
 
 INITIAL_ARTICLES.forEach((a) => validRoutes.add(`/article/${a.slug}`));

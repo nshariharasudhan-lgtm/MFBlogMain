@@ -1,0 +1,350 @@
+{
+  "databaseId": "yieldnest_behavior_analytics_isolated_v1",
+  "version": 1,
+  "description": "Dedicated behavioral intelligence database - strictly isolated from Supabase CMS",
+  "createdAt": "2026-10-06T00:44:23.194Z",
+  "lastUpdated": "2026-10-13T01:10:41.715Z",
+  "summary": {
+    "totalSessions": 1421,
+    "totalPageViews": 4891,
+    "totalToolInteractions": 2340,
+    "totalActiveReadingMinutes": 8773.099999999944,
+    "avgDwellSecondsPerSession": 195
+  },
+  "contentAffinity": {
+    "/article/direct-vs-regular-plans-true-cost-distributor-commissions": {
+      "path": "/article/direct-vs-regular-plans-true-cost-distributor-commissions",
+      "title": "Direct vs Regular Mutual Funds: True Cost of Commissions & Long-Term Wealth Compounding",
+      "category": "Fund Comparison",
+      "views": 890,
+      "totalDwellSeconds": 142400,
+      "avgDwellSeconds": 160,
+      "scroll25": 780,
+      "scroll50": 690,
+      "scroll75": 580,
+      "scroll100": 470,
+      "shares": 62,
+      "affinityScore": 94,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    },
+    "/article/small-cap-mutual-funds-stress-test-sebi-amfi-liquidity": {
+      "path": "/article/small-cap-mutual-funds-stress-test-sebi-amfi-liquidity",
+      "title": "Small Cap Mutual Funds Stress Test: SEBI Mandated Liquidity Analysis",
+      "category": "Market Trends",
+      "views": 740,
+      "totalDwellSeconds": 111000,
+      "avgDwellSeconds": 150,
+      "scroll25": 680,
+      "scroll50": 590,
+      "scroll75": 480,
+      "scroll100": 360,
+      "shares": 48,
+      "affinityScore": 89,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    },
+    "/article/sebi-amfi-mutual-fund-categorization-guide-all-scheme-categories-rules": {
+      "path": "/article/sebi-amfi-mutual-fund-categorization-guide-all-scheme-categories-rules",
+      "title": "SEBI & AMFI Mutual Fund Categorization Guide: All 36 Scheme Categories Explained",
+      "category": "Category Deep-Dive",
+      "views": 680,
+      "totalDwellSeconds": 122400,
+      "avgDwellSeconds": 180,
+      "scroll25": 630,
+      "scroll50": 560,
+      "scroll75": 490,
+      "scroll100": 410,
+      "shares": 55,
+      "affinityScore": 91,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    },
+    "/article/nifty-50-index-funds-vs-active-large-cap-funds": {
+      "path": "/article/nifty-50-index-funds-vs-active-large-cap-funds",
+      "title": "Nifty 50 Index Funds vs Active Large Cap Funds: Alpha Decay & Tracking Error",
+      "category": "Performance Analysis",
+      "views": 610,
+      "totalDwellSeconds": 85400,
+      "avgDwellSeconds": 140,
+      "scroll25": 540,
+      "scroll50": 470,
+      "scroll75": 390,
+      "scroll100": 290,
+      "shares": 34,
+      "affinityScore": 82,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    },
+    "/article/sip-vs-lumpsum-quantitative-return-comparison-market-cycles": {
+      "path": "/article/sip-vs-lumpsum-quantitative-return-comparison-market-cycles",
+      "title": "SIP vs Lumpsum: Quantitative Return Comparison Across 15-Year Market Cycles",
+      "category": "SIP Strategies",
+      "views": 590,
+      "totalDwellSeconds": 88500,
+      "avgDwellSeconds": 150,
+      "scroll25": 530,
+      "scroll50": 460,
+      "scroll75": 380,
+      "scroll100": 310,
+      "shares": 41,
+      "affinityScore": 85,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    },
+    "/article/how-to-read-mutual-fund-factsheet-essential-metrics-guide": {
+      "path": "/article/how-to-read-mutual-fund-factsheet-essential-metrics-guide",
+      "title": "How to Read a Mutual Fund Factsheet: 10 Critical Metrics Beyond Historical Returns",
+      "category": "Performance Analysis",
+      "views": 450,
+      "totalDwellSeconds": 58500,
+      "avgDwellSeconds": 130,
+      "scroll25": 390,
+      "scroll50": 320,
+      "scroll75": 250,
+      "scroll100": 190,
+      "shares": 26,
+      "affinityScore": 78,
+      "lastViewed": "2026-10-13T00:44:23.194Z"
+    }
+  },
+  "toolUsage": {
+    "sip-calculator": {
+      "toolId": "sip-calculator",
+      "toolName": "SIP Wealth Compounding Calculator",
+      "category": "calculator",
+      "path": "/calculators/sip",
+      "usesCount": 1240,
+      "interactionsCount": 4620,
+      "shareClicks": 84,
+      "avgSessionSeconds": 165,
+      "stickinessIndex": 96,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "direct-vs-regular": {
+      "toolId": "direct-vs-regular",
+      "toolName": "Direct vs Regular TER Drag Calculator",
+      "category": "calculator",
+      "path": "/calculators/direct-vs-regular",
+      "usesCount": 890,
+      "interactionsCount": 3110,
+      "shareClicks": 71,
+      "avgSessionSeconds": 190,
+      "stickinessIndex": 92,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "step-up-sip": {
+      "toolId": "step-up-sip",
+      "toolName": "Step-Up SIP Compounding Calculator",
+      "category": "calculator",
+      "path": "/calculators/step-up-sip",
+      "usesCount": 760,
+      "interactionsCount": 2840,
+      "shareClicks": 49,
+      "avgSessionSeconds": 145,
+      "stickinessIndex": 88,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "redemption-checklist": {
+      "toolId": "redemption-checklist",
+      "toolName": "10-Point Pre-Redemption Due Diligence Checklist",
+      "category": "guide",
+      "path": "/guides/redemption-checklist",
+      "usesCount": 580,
+      "interactionsCount": 2150,
+      "shareClicks": 63,
+      "avgSessionSeconds": 210,
+      "stickinessIndex": 90,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "how-to-choose": {
+      "toolId": "how-to-choose",
+      "toolName": "How to Choose a Mutual Fund (10-Point Checklist & Quiz)",
+      "category": "guide",
+      "path": "/guides/how-to-choose-a-mutual-fund",
+      "usesCount": 520,
+      "interactionsCount": 1980,
+      "shareClicks": 42,
+      "avgSessionSeconds": 240,
+      "stickinessIndex": 87,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "cost-of-delay": {
+      "toolId": "cost-of-delay",
+      "toolName": "Cost of Delay SIP Calculator",
+      "category": "calculator",
+      "path": "/calculators/cost-of-delay",
+      "usesCount": 460,
+      "interactionsCount": 1420,
+      "shareClicks": 38,
+      "avgSessionSeconds": 130,
+      "stickinessIndex": 81,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "tax-estimator": {
+      "toolId": "tax-estimator",
+      "toolName": "Mutual Fund Capital Gains Tax Estimator (Budget 2024)",
+      "category": "calculator",
+      "path": "/calculators/tax-estimator",
+      "usesCount": 430,
+      "interactionsCount": 1310,
+      "shareClicks": 32,
+      "avgSessionSeconds": 155,
+      "stickinessIndex": 79,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "swp-calculator": {
+      "toolId": "swp-calculator",
+      "toolName": "Systematic Withdrawal Plan (SWP) Simulator",
+      "category": "calculator",
+      "path": "/calculators/swp",
+      "usesCount": 390,
+      "interactionsCount": 1190,
+      "shareClicks": 27,
+      "avgSessionSeconds": 140,
+      "stickinessIndex": 77,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "goal-planner": {
+      "toolId": "goal-planner",
+      "toolName": "Inflation-Adjusted Goal Planner",
+      "category": "calculator",
+      "path": "/calculators/goal-planner",
+      "usesCount": 360,
+      "interactionsCount": 980,
+      "shareClicks": 21,
+      "avgSessionSeconds": 150,
+      "stickinessIndex": 74,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    },
+    "sip-vs-lumpsum": {
+      "toolId": "sip-vs-lumpsum",
+      "toolName": "SIP vs Lumpsum Strategy Comparator",
+      "category": "calculator",
+      "path": "/calculators/sip-vs-lumpsum",
+      "usesCount": 340,
+      "interactionsCount": 890,
+      "shareClicks": 19,
+      "avgSessionSeconds": 125,
+      "stickinessIndex": 72,
+      "lastUsed": "2026-10-13T00:44:23.194Z"
+    }
+  },
+  "navigationTransitions": {
+    "/ -> /calculators": 420,
+    "/ -> /category/fund-comparison": 340,
+    "/category/fund-comparison -> /article/direct-vs-regular-plans-true-cost-distributor-commissions": 290,
+    "/article/direct-vs-regular-plans-true-cost-distributor-commissions -> /calculators/direct-vs-regular": 260,
+    "/calculators -> /calculators/sip": 240,
+    "/calculators/sip -> /calculators/step-up-sip": 180,
+    "/ -> /toolkit": 210,
+    "/toolkit -> /guides/redemption-checklist": 160,
+    "/guides -> /guides/how-to-choose-a-mutual-fund": 150,
+    "/category/category-deep-dive -> /hub/basics": 130
+  },
+  "searchQueries": {
+    "direct vs regular": {
+      "query": "direct vs regular",
+      "count": 184,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "quant small cap": {
+      "query": "quant small cap",
+      "count": 142,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "parag parikh flexi cap": {
+      "query": "parag parikh flexi cap",
+      "count": 128,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "elss tax saving": {
+      "query": "elss tax saving",
+      "count": 96,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "exit load timing": {
+      "query": "exit load timing",
+      "count": 74,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "cas statement cams": {
+      "query": "cas statement cams",
+      "count": 68,
+      "resultsFound": true,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "gold etf vs mutual fund": {
+      "query": "gold etf vs mutual fund",
+      "count": 42,
+      "resultsFound": false,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    },
+    "arbitrage fund tax": {
+      "query": "arbitrage fund tax",
+      "count": 37,
+      "resultsFound": false,
+      "lastSearched": "2026-10-13T00:44:23.194Z"
+    }
+  },
+  "recentSessions": [
+    {
+      "sessionId": "sess-mv5ykwws-gcj4a",
+      "startedAt": "2026-10-13T00:44:41.028Z",
+      "lastActiveAt": "2026-10-13T01:10:39.714Z",
+      "deviceType": "mobile",
+      "pagesVisited": [
+        "/"
+      ],
+      "toolsUsed": [],
+      "totalDurationSeconds": 1550
+    },
+    {
+      "sessionId": "sess-9021",
+      "startedAt": "2026-10-13T00:32:23.195Z",
+      "lastActiveAt": "2026-10-13T00:40:23.195Z",
+      "deviceType": "desktop",
+      "pagesVisited": [
+        "/",
+        "/category/fund-comparison",
+        "/article/direct-vs-regular-plans-true-cost-distributor-commissions",
+        "/calculators/direct-vs-regular"
+      ],
+      "toolsUsed": [
+        "direct-vs-regular"
+      ],
+      "totalDurationSeconds": 480
+    },
+    {
+      "sessionId": "sess-9022",
+      "startedAt": "2026-10-13T00:19:23.195Z",
+      "lastActiveAt": "2026-10-13T00:26:23.195Z",
+      "deviceType": "mobile",
+      "pagesVisited": [
+        "/calculators",
+        "/calculators/sip",
+        "/calculators/step-up-sip"
+      ],
+      "toolsUsed": [
+        "sip-calculator",
+        "step-up-sip"
+      ],
+      "totalDurationSeconds": 420
+    },
+    {
+      "sessionId": "sess-9023",
+      "startedAt": "2026-10-12T23:59:23.195Z",
+      "lastActiveAt": "2026-10-13T00:09:23.195Z",
+      "deviceType": "desktop",
+      "pagesVisited": [
+        "/toolkit",
+        "/guides/redemption-checklist",
+        "/faq"
+      ],
+      "toolsUsed": [
+        "redemption-checklist"
+      ],
+      "totalDurationSeconds": 600
+    }
+  ]
+}
