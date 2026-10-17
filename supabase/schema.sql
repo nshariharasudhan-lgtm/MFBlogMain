@@ -187,3 +187,35 @@ CREATE POLICY "Admin manage site_settings" ON public.site_settings
 
 CREATE POLICY "Admin manage social_schedules" ON public.social_schedules
     FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);
+
+-- ==============================================================================
+-- 7. AMFI MUTUAL FUNDS METADATA & NAV REGISTRY
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.amfi_funds (
+    scheme_code TEXT PRIMARY KEY,
+    isin_growth TEXT,
+    isin_div_payout TEXT,
+    scheme_name TEXT NOT NULL,
+    fund_house TEXT NOT NULL,
+    category TEXT NOT NULL,
+    sub_category TEXT,
+    nav NUMERIC(14, 4) NOT NULL,
+    nav_date TEXT,
+    cagr_1y NUMERIC(8, 2),
+    cagr_3y NUMERIC(8, 2),
+    cagr_5y NUMERIC(8, 2),
+    is_direct BOOLEAN DEFAULT true,
+    is_growth BOOLEAN DEFAULT true,
+    synced_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_amfi_funds_category ON public.amfi_funds(category);
+CREATE INDEX IF NOT EXISTS idx_amfi_funds_fund_house ON public.amfi_funds(fund_house);
+
+ALTER TABLE public.amfi_funds ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read amfi_funds" ON public.amfi_funds
+    FOR SELECT USING (true);
+
+CREATE POLICY "Admin manage amfi_funds" ON public.amfi_funds
+    FOR ALL TO authenticated, service_role USING (true) WITH CHECK (true);

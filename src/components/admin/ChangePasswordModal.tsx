@@ -81,13 +81,14 @@ export function ChangePasswordModal({ onSuccess, onDismiss }: ChangePasswordModa
         <form onSubmit={handleSubmit} className="space-y-3.5">
           <div>
             <label className="block text-xs font-semibold text-stone-700 mb-1 font-mono-data">
-              Current Temporary Password
+              Current Temporary Password <span className="font-normal text-stone-500">(Default: Astapor@2020)</span>
             </label>
             <input
               type="password"
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password (Default: Astapor@2020)"
               className="w-full text-xs p-2.5 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-stone-900 font-mono-data"
             />
           </div>

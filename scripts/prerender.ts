@@ -811,6 +811,36 @@ export function buildSitemapXmlString(articles: any[]): string {
     <priority>0.95</priority>
   </url>
   <url>
+    <loc>${CANONICAL_ORIGIN}/compare</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/database</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/compare/parag-parikh-flexi-cap-vs-hdfc-flexi-cap</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/compare/nippon-india-small-cap-vs-quant-small-cap</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${CANONICAL_ORIGIN}/compare/mirae-asset-large-midcap-vs-motilal-oswal-large-midcap</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>${CANONICAL_ORIGIN}/calculators</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
@@ -2458,6 +2488,14 @@ export function buildLlmsTxtString(articles: any[]): string {
 - [Market Trends](${CANONICAL_ORIGIN}/category/market-trends): AMFI inflows, SIP book trajectories, and macro liquidity trends.
 - [Category Deep-Dive](${CANONICAL_ORIGIN}/category/category-deep-dive): Deep dives into Flexi Cap, Small Cap, Large & Mid Cap, and Index fund universes.
 - [SIP Strategies](${CANONICAL_ORIGIN}/category/sip-strategies): Systematic investment planning tactics, step-up SIP compounding, and direct plan optimization.
+
+## Mutual Fund Head-to-Head Comparisons & Overlap Dossiers
+
+- [Fund Comparisons Directory Hub](${CANONICAL_ORIGIN}/compare): Interactive executive battlecards comparing top Indian mutual funds with portfolio stock overlap % and live SIP outcome simulators.
+- [AMFI Mutual Fund Registry & Database](${CANONICAL_ORIGIN}/database): Real-time live database of Indian mutual fund schemes with official daily NAVs, ISIN codes, direct vs regular plan tracking, and Supabase cloud synchronization.
+- [Parag Parikh Flexi Cap vs HDFC Flexi Cap](${CANONICAL_ORIGIN}/compare/parag-parikh-flexi-cap-vs-hdfc-flexi-cap): Value investing & foreign tech moats vs domestic cyclical momentum.
+- [Nippon India Small Cap vs Quant Small Cap](${CANONICAL_ORIGIN}/compare/nippon-india-small-cap-vs-quant-small-cap): 200-stock diversified compounding vs quantitative predictive momentum.
+- [Mirae Asset Large & Midcap vs Motilal Oswal Large and Midcap](${CANONICAL_ORIGIN}/compare/mirae-asset-large-midcap-vs-motilal-oswal-large-midcap): 50:50 GARP consistency vs 30-stock high-conviction momentum.
 
 ## Quantitative Calculators Suite
 

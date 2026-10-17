@@ -17,6 +17,7 @@ import {
   ArrowRight,
   ExternalLink,
   DollarSign,
+  Database,
 } from "lucide-react";
 import { ArticleCategory, SiteSettings } from "../types";
 import { YieldNestLogo } from "./YieldNestLogo";
@@ -36,6 +37,8 @@ interface NavbarProps {
   onNavigateCalculators?: () => void;
   activeMenu?:
     | "calculators"
+    | "compare"
+    | "database"
     | "faq"
     | "glossary"
     | "guides"
@@ -46,6 +49,8 @@ interface NavbarProps {
     | "toolkit"
     | "methodology"
     | "none";
+  onNavigateCompare?: () => void;
+  onNavigateDatabase?: () => void;
   onNavigateFAQ?: () => void;
   onNavigateGlossary?: () => void;
   onNavigateGuides?: () => void;
@@ -79,6 +84,8 @@ export function Navbar({
   isCalculatorView = false,
   onNavigateCalculators,
   activeMenu = "none",
+  onNavigateCompare,
+  onNavigateDatabase,
   onNavigateFAQ,
   onNavigateGlossary,
   onNavigateGuides,
@@ -146,11 +153,22 @@ export function Navbar({
     },
     {
       id: "fund-comparisons",
-      label: "Fund Comparisons",
-      href: "/category/fund-comparison",
+      label: "Fund Duels",
+      href: "/compare",
       icon: Scale,
-      isActive: currentCategory === "Fund Comparison" && !isCalculatorView,
-      onClick: () => onSelectCategory("Fund Comparison"),
+      isActive: activeMenu === "compare" || currentCategory === "Fund Comparison",
+      onClick: onNavigateCompare || (() => onSelectCategory("Fund Comparison")),
+    },
+    {
+      id: "fund-database",
+      label: "AMFI Registry",
+      href: "/database",
+      icon: Database,
+      isActive: activeMenu === "database",
+      onClick: onNavigateDatabase || (() => {
+        window.history.pushState({}, "", "/database");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      }),
     },
     {
       id: "sip",

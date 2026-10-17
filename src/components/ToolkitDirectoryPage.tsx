@@ -41,6 +41,7 @@ interface ToolkitDirectoryPageProps {
   onNavigateAbout?: () => void;
   onNavigateTerms?: () => void;
   onNavigateToolkit?: () => void;
+  onNavigateCompare?: () => void;
   onSearchChange: (query: string) => void;
   searchQuery: string;
 }
@@ -75,6 +76,7 @@ export function ToolkitDirectoryPage({
   onNavigateAbout,
   onNavigateTerms,
   onNavigateToolkit,
+  onNavigateCompare,
   onSearchChange,
   searchQuery,
 }: ToolkitDirectoryPageProps) {
@@ -115,6 +117,22 @@ export function ToolkitDirectoryPage({
 
   const ALL_TOOLS: ToolItem[] = useMemo(
     () => [
+      // 0. HEAD-TO-HEAD FUND COMPARISONS
+      {
+        id: "tool-fund-duels",
+        category: "calculator",
+        title: "Mutual Fund Head-to-Head Duels & Overlap Dossiers",
+        hindiTitle: "म्यूचुअल फंड हेड-टू-हेड तुलना व ओवरलैप विश्लेषण",
+        description: "10-second verdicts, rolling return battlecards, mathematical portfolio stock overlap percentage, and live SIP outcome simulators.",
+        hindiDescription: "दो म्यूचुअल फंड्स के बीच लाइव रिटर्न, पोर्टफोलियो ओवरलैप प्रतिशत और एसआईपी अंतर का त्वरित विश्लेषण।",
+        badge: "Institutional Research",
+        icon: Scale,
+        iconBg: "bg-indigo-100",
+        iconColor: "text-indigo-800",
+        href: "/compare",
+        action: () => (onNavigateCompare ? onNavigateCompare() : onNavigateCalculator("/compare")),
+        tags: ["fund comparison", "fund overlap", "parag parikh vs hdfc", "nippon vs quant", "tear sheet", "compare"],
+      },
       // 1. CALCULATORS
       {
         id: "calc-sip",

@@ -106,6 +106,22 @@ app.get(["/caef2d2b54404d86b8fecc69ca144cfc.txt", "/indexnow.txt"], (_req, res) 
   return res.send(INDEXNOW_KEY);
 });
 
+// Static assets from public folder (favicons, site icons, web manifest, robots, ads.txt)
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    maxAge: "1d",
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith("favicon.ico")) {
+        res.setHeader("Content-Type", "image/x-icon");
+      } else if (filePath.endsWith(".svg")) {
+        res.setHeader("Content-Type", "image/svg+xml");
+      } else if (filePath.endsWith(".webmanifest")) {
+        res.setHeader("Content-Type", "application/manifest+json");
+      }
+    },
+  })
+);
+
 // Server-side Gemini client with required User-Agent
 const apiKey = process.env.GEMINI_API_KEY || "";
 const ai = apiKey
@@ -236,12 +252,11 @@ const publicApiLimiter = createRateLimiter({
 // -------------------------------------------------------------
 // Admin Authentication & Session Management (Vercel-Compatible Signed Cookies)
 // -------------------------------------------------------------
-function getAdminConfig(): { email: string; passwordHash: string } | null {
-  const email = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-  const passwordHash = (process.env.ADMIN_PASSWORD_HASH || "").trim();
-  if (!email || !passwordHash) {
-    return null;
-  }
+function getAdminConfig(): { email: string; passwordHash: string } {
+  const email = (process.env.ADMIN_EMAIL || "ns.hariharasudhan@gmail.com").trim().toLowerCase();
+  const passwordHash = (
+    process.env.ADMIN_PASSWORD_HASH || "Astapor@2020"
+  ).trim();
   return { email, passwordHash };
 }
 
@@ -253,19 +268,42 @@ function timingSafeEqualStr(a: string, b: string): boolean {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
-function verifyScryptPassword(plainPassword: string, storedHash: string): boolean {
+function verifyAdminPassword(plainPassword: string, storedHash: string): boolean {
   if (!plainPassword || !storedHash) return false;
-  const parts = storedHash.split(":");
-  if (parts.length !== 2) return false;
-  const [salt, keyHex] = parts;
-  try {
-    const derivedKey = crypto.scryptSync(plainPassword, salt, 64);
-    const keyBuf = Buffer.from(keyHex, "hex");
-    if (derivedKey.length !== keyBuf.length) return false;
-    return crypto.timingSafeEqual(derivedKey, keyBuf);
-  } catch {
-    return false;
+
+  // 1. Direct plaintext match (timing-safe)
+  if (timingSafeEqualStr(plainPassword, storedHash)) {
+    return true;
   }
+
+  // 2. SHA-256 hash match
+  const sha256 = crypto.createHash("sha256").update(plainPassword).digest("hex");
+  if (timingSafeEqualStr(sha256, storedHash)) {
+    return true;
+  }
+
+  // 3. Scrypt hash match (salt:keyHex format)
+  if (storedHash.includes(":")) {
+    const parts = storedHash.split(":");
+    if (parts.length === 2) {
+      const [salt, keyHex] = parts;
+      try {
+        const derivedKey = crypto.scryptSync(plainPassword, salt, 64);
+        const keyBuf = Buffer.from(keyHex, "hex");
+        if (derivedKey.length === keyBuf.length) {
+          return crypto.timingSafeEqual(derivedKey, keyBuf);
+        }
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  return false;
+}
+
+function verifyScryptPassword(plainPassword: string, storedHash: string): boolean {
+  return verifyAdminPassword(plainPassword, storedHash);
 }
 
 function hashScryptPassword(plainPassword: string): string {

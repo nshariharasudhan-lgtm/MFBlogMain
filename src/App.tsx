@@ -42,6 +42,11 @@ import { InvestorCommandDeck } from "./components/InvestorCommandDeck";
 import { ToolkitDirectoryPage } from "./components/ToolkitDirectoryPage";
 import { CategoryPage } from "./components/CategoryPage";
 import { behaviorTracker } from "./lib/behaviorTracker";
+import { FundComparisonDossierPage } from "./components/comparisons/FundComparisonDossierPage";
+import { FundComparisonsHubPage } from "./components/comparisons/FundComparisonsHubPage";
+import { FundDatabasePage } from "./components/comparisons/FundDatabasePage";
+import { FundComparisonDossier } from "./types/comparison";
+import { getFundComparisonBySlug } from "./data/fundComparisonsData";
 
 // Code-split heavy components away from initial public visitor bundle
 const ArticleReader = lazy(() =>
@@ -253,6 +258,9 @@ function YieldNestApp() {
   const [isHubsIndexView, setIsHubsIndexView] = useState(false);
   const [isToolkitView, setIsToolkitView] = useState(false);
   const [activeStaticPage, setActiveStaticPage] = useState<"about" | "terms" | "methodology" | null>(null);
+  const [isCompareHubView, setIsCompareHubView] = useState(false);
+  const [selectedCompareDossier, setSelectedCompareDossier] = useState<FundComparisonDossier | null>(null);
+  const [isFundDatabaseView, setIsFundDatabaseView] = useState(false);
 
   // Initialize and handle URL routing (Instant zero-delay resolution from preloaded state)
   useEffect(() => {
@@ -344,6 +352,69 @@ function YieldNestApp() {
       return;
     } else {
       setIsToolkitView(false);
+    }
+
+    // AMFI Mutual Fund Live Database & Metadata Registry
+    if (
+      path === "/database" ||
+      path === "/funds" ||
+      path === "/amfi-database" ||
+      path === "/fund-database" ||
+      path === "/amfi"
+    ) {
+      setIsFundDatabaseView(true);
+      setIsCompareHubView(false);
+      setSelectedCompareDossier(null);
+      setIsToolkitView(false);
+      setIsHubsIndexView(false);
+      setSelectedHub(null);
+      setIsCalculatorView(false);
+      setSelectedArticle(null);
+      setIsAdminView(false);
+      setPlaceholderView(null);
+      setActiveStaticPage(null);
+      return;
+    } else {
+      setIsFundDatabaseView(false);
+    }
+
+    // Mutual Fund Head-to-Head Comparisons & Tear Sheets
+    if (
+      path === "/compare" ||
+      path === "/comparisons" ||
+      path === "/compare-funds" ||
+      path === "/duels"
+    ) {
+      setIsCompareHubView(true);
+      setSelectedCompareDossier(null);
+      setIsToolkitView(false);
+      setIsHubsIndexView(false);
+      setSelectedHub(null);
+      setIsCalculatorView(false);
+      setSelectedArticle(null);
+      setIsAdminView(false);
+      setPlaceholderView(null);
+      setActiveStaticPage(null);
+      return;
+    } else if (path.startsWith("/compare/")) {
+      const duelSlug = path.replace(/^\/compare\//, "").replace(/\/+$/, "");
+      const matchedDuel = getFundComparisonBySlug(duelSlug);
+      if (matchedDuel) {
+        setSelectedCompareDossier(matchedDuel);
+        setIsCompareHubView(false);
+        setIsToolkitView(false);
+        setIsHubsIndexView(false);
+        setSelectedHub(null);
+        setIsCalculatorView(false);
+        setSelectedArticle(null);
+        setIsAdminView(false);
+        setPlaceholderView(null);
+        setActiveStaticPage(null);
+        return;
+      }
+    } else {
+      setIsCompareHubView(false);
+      setSelectedCompareDossier(null);
     }
 
     // Topic Hubs Index or Specific Topic Hub
@@ -951,9 +1022,66 @@ function YieldNestApp() {
     setIsToolkitView(false);
     setPlaceholderView(null);
     setActiveStaticPage(null);
+    setIsCompareHubView(false);
+    setSelectedCompareDossier(null);
+    setIsFundDatabaseView(false);
     setCurrentCategory("all");
     window.history.pushState({}, "", "/");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate to Fund Comparisons Hub
+  const handleNavigateCompare = () => {
+    setIsCompareHubView(true);
+    setSelectedCompareDossier(null);
+    setIsFundDatabaseView(false);
+    setIsCalculatorView(false);
+    setPlaceholderView(null);
+    setSelectedArticle(null);
+    setIsAdminView(false);
+    setSelectedHub(null);
+    setIsHubsIndexView(false);
+    setIsToolkitView(false);
+    setActiveStaticPage(null);
+    window.history.pushState({}, "", "/compare");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate to Live AMFI Mutual Fund Database
+  const handleNavigateDatabase = () => {
+    setIsFundDatabaseView(true);
+    setIsCompareHubView(false);
+    setSelectedCompareDossier(null);
+    setIsCalculatorView(false);
+    setPlaceholderView(null);
+    setSelectedArticle(null);
+    setIsAdminView(false);
+    setSelectedHub(null);
+    setIsHubsIndexView(false);
+    setIsToolkitView(false);
+    setActiveStaticPage(null);
+    window.history.pushState({}, "", "/database");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate to specific Head-to-Head Duel
+  const handleSelectDuel = (slug: string) => {
+    const dossier = getFundComparisonBySlug(slug);
+    if (dossier) {
+      setSelectedCompareDossier(dossier);
+      setIsCompareHubView(false);
+      setIsFundDatabaseView(false);
+      setIsCalculatorView(false);
+      setPlaceholderView(null);
+      setSelectedArticle(null);
+      setIsAdminView(false);
+      setSelectedHub(null);
+      setIsHubsIndexView(false);
+      setIsToolkitView(false);
+      setActiveStaticPage(null);
+      window.history.pushState({}, "", `/compare/${slug}`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handleAuthSuccess = (user: AdminUser) => {
@@ -1061,7 +1189,11 @@ function YieldNestApp() {
             : null
         }
         urlPath={
-          activeStaticPage === "methodology"
+          selectedCompareDossier
+            ? `/compare/${selectedCompareDossier.slug}`
+            : isCompareHubView
+            ? "/compare"
+            : activeStaticPage === "methodology"
             ? "/methodology"
             : selectedHub
             ? `/hub/${selectedHub.slug}`
@@ -1080,7 +1212,11 @@ function YieldNestApp() {
             : "/"
         }
         customTitle={
-          activeStaticPage === "methodology"
+          selectedCompareDossier
+            ? selectedCompareDossier.metaTitle
+            : isCompareHubView
+            ? "Mutual Fund Head-to-Head Comparisons & Overlap Dossiers | YieldNest"
+            : activeStaticPage === "methodology"
             ? "Research Methodology & Data Sources | YieldNest.online"
             : selectedHub
             ? selectedHub.metaTitle
@@ -1097,7 +1233,11 @@ function YieldNestApp() {
             : undefined
         }
         customDescription={
-          activeStaticPage === "methodology"
+          selectedCompareDossier
+            ? selectedCompareDossier.metaDescription
+            : isCompareHubView
+            ? "Side-by-side mutual fund tear sheets, 5-year rolling returns, portfolio stock overlap percentage, and fee drag calculators on YieldNest."
+            : activeStaticPage === "methodology"
             ? "Independent research methodology, statutory AMFI data pipelines, rolling return formulas, and mathematical models powering YieldNest mutual fund analytics."
             : selectedHub
             ? selectedHub.metaDescription
@@ -1114,7 +1254,11 @@ function YieldNestApp() {
             : undefined
         }
         customKeywords={
-          activeStaticPage === "methodology"
+          selectedCompareDossier
+            ? selectedCompareDossier.primaryKeywords.join(", ")
+            : isCompareHubView
+            ? "mutual fund comparison, fund overlap calculator, compare mutual funds India, best mutual fund duel"
+            : activeStaticPage === "methodology"
             ? "mutual fund methodology, AMFI data pipeline, rolling return calculation, TER compounding formula, YieldNest research"
             : selectedHub
             ? selectedHub.keywords
@@ -1160,6 +1304,151 @@ function YieldNestApp() {
             initialTab={adminInitialTab}
           />
         </Suspense>
+      ) : selectedCompareDossier ? (
+        /* Dedicated Head-to-Head Comparison Dossier Page */
+        <>
+          <Navbar
+            currentCategory="all"
+            onSelectCategory={handleSelectCategory}
+            onSearchChange={setSearchQuery}
+            searchQuery={searchQuery}
+            settings={settings}
+            onNavigateHome={handleBackToHome}
+            isCalculatorView={false}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            activeMenu="compare"
+            onNavigateCompare={handleNavigateCompare}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+          <main className="flex-1">
+            <FundComparisonDossierPage
+              dossier={selectedCompareDossier}
+              onNavigateCompareHub={handleNavigateCompare}
+              onSelectOtherDuel={handleSelectDuel}
+              onNavigateCalculator={handleOpenCalculators}
+            />
+          </main>
+          <Footer
+            settings={settings}
+            onSelectCategory={handleSelectCategory}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            onNavigateCalculator={handleOpenCalculators}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+        </>
+      ) : isCompareHubView ? (
+        /* Master Mutual Fund Comparisons & Battlecards Directory Hub */
+        <>
+          <Navbar
+            currentCategory="all"
+            onSelectCategory={handleSelectCategory}
+            onSearchChange={setSearchQuery}
+            searchQuery={searchQuery}
+            settings={settings}
+            onNavigateHome={handleBackToHome}
+            isCalculatorView={false}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            activeMenu="compare"
+            onNavigateCompare={handleNavigateCompare}
+            onNavigateDatabase={handleNavigateDatabase}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+          <main className="flex-1">
+            <FundComparisonsHubPage
+              onSelectDuel={handleSelectDuel}
+              onNavigateDatabase={handleNavigateDatabase}
+              onDynamicDuelGenerated={(dossier) => {
+                setSelectedCompareDossier(dossier);
+                setIsCompareHubView(false);
+                window.history.pushState({}, "", `/compare/${dossier.slug}`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          </main>
+          <Footer
+            settings={settings}
+            onSelectCategory={handleSelectCategory}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            onNavigateCalculator={handleOpenCalculators}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+        </>
+      ) : isFundDatabaseView ? (
+        /* Real-Time AMFI Mutual Fund Registry & Ingestion Database Page */
+        <>
+          <Navbar
+            currentCategory="all"
+            onSelectCategory={handleSelectCategory}
+            onSearchChange={setSearchQuery}
+            searchQuery={searchQuery}
+            settings={settings}
+            onNavigateHome={handleBackToHome}
+            isCalculatorView={false}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            activeMenu="database"
+            onNavigateCompare={handleNavigateCompare}
+            onNavigateDatabase={handleNavigateDatabase}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+          <main className="flex-1">
+            <FundDatabasePage
+              onNavigateHome={handleBackToHome}
+              onNavigateCompare={handleNavigateCompare}
+              onLaunchDuel={() => {
+                handleNavigateCompare();
+              }}
+            />
+          </main>
+          <Footer
+            settings={settings}
+            onSelectCategory={handleSelectCategory}
+            onNavigateCalculators={() => handleOpenCalculators()}
+            onNavigateCalculator={handleOpenCalculators}
+            onNavigateFAQ={handleNavigateFAQ}
+            onNavigateGlossary={handleNavigateGlossary}
+            onNavigateGuides={handleNavigateGuides}
+            onNavigateHubs={() => handleNavigateHub()}
+            onNavigateAbout={handleNavigateAbout}
+            onNavigateTerms={handleNavigateTerms}
+            onNavigateToolkit={handleNavigateToolkit}
+            onNavigateMethodology={handleNavigateMethodology}
+          />
+        </>
       ) : selectedHub ? (
         /* Reusable Topic Hub Page for Selected Cluster */
         <TopicHubPage
@@ -1208,6 +1497,7 @@ function YieldNestApp() {
           onNavigateAbout={handleNavigateAbout}
           onNavigateTerms={handleNavigateTerms}
           onNavigateToolkit={handleNavigateToolkit}
+          onNavigateCompare={handleNavigateCompare}
           onSearchChange={setSearchQuery}
           searchQuery={searchQuery}
         />
@@ -1697,6 +1987,8 @@ function YieldNestApp() {
             onNavigateTerms={handleNavigateTerms}
             onNavigateToolkit={handleNavigateToolkit}
             onNavigateMethodology={handleNavigateMethodology}
+            onNavigateCompare={handleNavigateCompare}
+            onNavigateDatabase={handleNavigateDatabase}
           />
 
           <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-10">
@@ -1709,6 +2001,8 @@ function YieldNestApp() {
               onNavigateHubs={() => handleNavigateHub()}
               onNavigateGlossary={handleNavigateGlossary}
               onNavigateToolkit={handleNavigateToolkit}
+              onNavigateCompare={handleNavigateCompare}
+              onNavigateDatabase={handleNavigateDatabase}
             />
 
             {/* Loading State */}

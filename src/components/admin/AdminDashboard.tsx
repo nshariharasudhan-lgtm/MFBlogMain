@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Activity,
+  Scale,
 } from "lucide-react";
 import { ArticlePost, Comment, ContentSuggestion, SiteSettings, AdminUser } from "../../types";
 import { PostManager } from "./PostManager";
@@ -30,6 +31,7 @@ import { SubscribersManager } from "./SubscribersManager";
 import { ChangePasswordModal } from "./ChangePasswordModal";
 import { SeoPageOneDiagnostic } from "./SeoPageOneDiagnostic";
 import { BehaviorAnalyticsView } from "./BehaviorAnalyticsView";
+import { FundComparisonManager } from "./FundComparisonManager";
 import { logoutAdmin } from "../../lib/storage";
 
 interface AdminDashboardProps {
@@ -281,6 +283,7 @@ export function AdminDashboard({
         <div className="flex items-center gap-1 border-b border-[#EAE8E0] pb-2 overflow-x-auto text-xs font-medium">
           {[
             { id: "posts", label: "Articles Library", icon: FileText },
+            { id: "comparisons", label: "Fund Duels & Comparisons", icon: Scale },
             { id: "behavior-analytics", label: "Behavior & Content Intelligence", icon: Activity },
             { id: "seo-diagnostic", label: "Page 1 SEO Diagnostics", icon: BarChart3 },
             { id: "editor", label: editingPost ? "Edit Article" : "Article Studio", icon: Plus },
@@ -327,6 +330,14 @@ export function AdminDashboard({
                 await onSavePost({ ...post, status });
               }}
               onSavePost={onSavePost}
+            />
+          )}
+
+          {activeTab === "comparisons" && (
+            <FundComparisonManager
+              onPreviewDuel={(slug) => {
+                window.open(`/compare/${slug}`, "_blank");
+              }}
             />
           )}
 

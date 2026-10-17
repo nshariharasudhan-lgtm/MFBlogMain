@@ -239,3 +239,5 @@ export interface AnalyticsOverviewData {
   recentSessions: UserBehaviorSession[];
 }
 
+export * from "./comparison";
+

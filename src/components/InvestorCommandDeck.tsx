@@ -15,6 +15,7 @@ import {
   Globe,
   Sliders,
   ChevronRight,
+  Database,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -26,6 +27,8 @@ interface InvestorCommandDeckProps {
   onNavigateHubs: () => void;
   onNavigateGlossary: () => void;
   onNavigateToolkit: () => void;
+  onNavigateCompare?: () => void;
+  onNavigateDatabase?: () => void;
 }
 
 export function InvestorCommandDeck({
@@ -36,6 +39,8 @@ export function InvestorCommandDeck({
   onNavigateHubs,
   onNavigateGlossary,
   onNavigateToolkit,
+  onNavigateCompare,
+  onNavigateDatabase,
 }: InvestorCommandDeckProps) {
   const { isHindi } = useLanguage();
 
@@ -76,8 +81,28 @@ export function InvestorCommandDeck({
           </p>
         </div>
 
-        {/* Directory Launch Button */}
-        <div className="shrink-0 flex items-center gap-2">
+        {/* Directory Launch Buttons */}
+        <div className="shrink-0 flex flex-wrap items-center gap-2">
+          {onNavigateCompare && (
+            <a
+              href="/compare"
+              onClick={(e) => handleLinkClick(e, onNavigateCompare, "/compare")}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-900 hover:bg-indigo-950 text-white text-xs font-semibold font-mono-data tracking-wide transition-all shadow-xs cursor-pointer group no-underline"
+            >
+              <Scale className="w-3.5 h-3.5 text-amber-300" />
+              <span>{isHindi ? "फंड तुलना (Head-to-Head Duels)" : "Fund Duels & Tear Sheets"}</span>
+            </a>
+          )}
+          {onNavigateDatabase && (
+            <a
+              href="/database"
+              onClick={(e) => handleLinkClick(e, onNavigateDatabase, "/database")}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-950 hover:bg-black text-white text-xs font-semibold font-mono-data tracking-wide transition-all shadow-xs cursor-pointer group no-underline border border-emerald-800/40"
+            >
+              <Database className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{isHindi ? "AMFI फंड डेटाबेस" : "AMFI Fund Database"}</span>
+            </a>
+          )}
           <a
             href="/toolkit"
             onClick={(e) => handleLinkClick(e, onNavigateToolkit, "/toolkit")}

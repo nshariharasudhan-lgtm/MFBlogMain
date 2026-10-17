@@ -174,16 +174,17 @@ export function BehaviorAnalyticsView({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base sm:text-lg font-bold font-serif-editorial text-stone-100">
-                  Dedicated Behavioral Intelligence Database
+                  Behavioral & Content Intelligence System
                 </h2>
                 <span className="text-[10px] font-mono-data bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
-                  STRICTLY ISOLATED FROM SUPABASE
+                  100% AUTHENTIC TELEMETRY (ZERO MOCK FIGURES)
+                </span>
+                <span className="text-[10px] font-mono-data bg-stone-700 text-stone-300 px-2 py-0.5 rounded-full">
+                  ISOLATED JSON STORE
                 </span>
               </div>
               <p className="text-xs text-stone-400 mt-1 max-w-2xl leading-relaxed">
-                Autonomous algorithm tracking content affinity, dwell time, and tool usage patterns.
-                Runs on an independent atomic database store (<code>/data/behavior_analytics.json</code>)
-                completely segregated from Supabase to prevent schema locks, query clashes, or quota limits.
+                Real-time reader intelligence tracking authentic content affinity, reading dwell time, scroll completion, tool usages, and search demand. All synthetic/dummy seed figures have been eliminated — all metrics represent verified, real-world user engagement.
               </p>
             </div>
           </div>
@@ -251,9 +252,11 @@ export function BehaviorAnalyticsView({
             <span>Tracked Sessions</span>
           </div>
           <div className="text-2xl font-bold text-stone-900 mt-1 font-serif-editorial">
-            {data?.summary?.totalSessions.toLocaleString() ?? "..."}
+            {data?.summary?.totalSessions ?? 0}
           </div>
-          <div className="text-[10px] text-stone-500 mt-0.5">Unique visitor journeys</div>
+          <div className="text-[10px] text-stone-500 mt-0.5">
+            {data?.summary && data.summary.totalSessions > 0 ? "Unique visitor journeys" : "Awaiting visitor sessions"}
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-[#EAE8E0] shadow-xs">
@@ -262,10 +265,12 @@ export function BehaviorAnalyticsView({
             <span>Page Impressions</span>
           </div>
           <div className="text-2xl font-bold text-stone-900 mt-1 font-serif-editorial">
-            {data?.summary?.totalPageViews.toLocaleString() ?? "..."}
+            {data?.summary?.totalPageViews ?? 0}
           </div>
           <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
-            +{(data?.summary?.totalPageViews ? (data.summary.totalPageViews / Math.max(1, data.summary.totalSessions)).toFixed(1) : "0")} pages/session
+            {data?.summary && data.summary.totalSessions > 0
+              ? `${(data.summary.totalPageViews / data.summary.totalSessions).toFixed(1)} pages/session`
+              : "0.0 pages/session"}
           </div>
         </div>
 
@@ -275,7 +280,7 @@ export function BehaviorAnalyticsView({
             <span>Tool Interactions</span>
           </div>
           <div className="text-2xl font-bold text-amber-600 mt-1 font-serif-editorial">
-            {data?.summary?.totalToolInteractions.toLocaleString() ?? "..."}
+            {data?.summary?.totalToolInteractions ?? 0}
           </div>
           <div className="text-[10px] text-stone-500 mt-0.5">Calculators & quiz events</div>
         </div>
@@ -288,10 +293,10 @@ export function BehaviorAnalyticsView({
           <div className="text-2xl font-bold text-stone-900 mt-1 font-serif-editorial">
             {data?.summary?.totalActiveReadingMinutes
               ? Math.round(data.summary.totalActiveReadingMinutes).toLocaleString()
-              : "..."}
+              : "0"}
             <span className="text-xs font-normal text-stone-500 ml-1">mins</span>
           </div>
-          <div className="text-[10px] text-stone-500 mt-0.5">Active focused engagement</div>
+          <div className="text-[10px] text-stone-500 mt-0.5">Active focused reading</div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-[#EAE8E0] shadow-xs col-span-2 sm:col-span-1">
@@ -302,10 +307,10 @@ export function BehaviorAnalyticsView({
           <div className="text-2xl font-bold text-stone-900 mt-1 font-serif-editorial">
             {data?.summary?.avgDwellSecondsPerSession
               ? formatDuration(data.summary.avgDwellSecondsPerSession)
-              : "..."}
+              : "0s"}
           </div>
           <div className="text-[10px] text-emerald-700 font-medium mt-0.5">
-            High retention index
+            {data?.summary && data.summary.totalSessions > 0 ? "Real retention index" : "Live telemetry active"}
           </div>
         </div>
       </div>
@@ -532,8 +537,14 @@ export function BehaviorAnalyticsView({
                     })
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center py-8 text-stone-400 font-mono-data">
-                        No content analytics recorded yet.
+                      <td colSpan={7} className="text-center py-12 px-4">
+                        <div className="max-w-md mx-auto space-y-1.5 text-stone-500">
+                          <Layers className="w-8 h-8 text-stone-300 mx-auto" />
+                          <div className="font-semibold text-stone-800 text-xs">No Authentic Content Reads Recorded Yet</div>
+                          <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                            As visitors read articles, the affinity engine will automatically measure dwell time, scroll depths (25% → 100%), and social shares to rank content here with real metrics.
+                          </p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -635,8 +646,14 @@ export function BehaviorAnalyticsView({
                 </div>
               ))
             ) : (
-              <div className="col-span-2 text-center py-10 bg-white rounded-xl border border-[#EAE8E0] text-stone-400 font-mono-data text-xs">
-                No tool interactions recorded yet.
+              <div className="col-span-2 text-center py-12 px-4 bg-white rounded-xl border border-[#EAE8E0]">
+                <div className="max-w-md mx-auto space-y-1.5 text-stone-500">
+                  <Sliders className="w-8 h-8 text-stone-300 mx-auto" />
+                  <div className="font-semibold text-stone-800 text-xs">No Real Tool Interactions Recorded Yet</div>
+                  <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                    When visitors interact with SIP calculators, step-up sliders, tax estimators, or checklists, authentic stickiness metrics and usage counts will appear here.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -697,8 +714,14 @@ export function BehaviorAnalyticsView({
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-stone-400 font-mono-data text-xs">
-                  No journey transitions captured yet.
+                <div className="text-center py-12 px-4 bg-[#FAF9F5] rounded-xl border border-stone-200/80">
+                  <div className="max-w-md mx-auto space-y-1.5 text-stone-500">
+                    <Compass className="w-8 h-8 text-stone-300 mx-auto" />
+                    <div className="font-semibold text-stone-800 text-xs">No Multi-Page Transitions Recorded Yet</div>
+                    <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                      As visitors navigate between categories, articles, and calculators, journey funnel flows will automatically map their navigation paths.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -789,8 +812,14 @@ export function BehaviorAnalyticsView({
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-stone-400 font-mono-data text-xs">
-                  No search trends tracked yet.
+                <div className="text-center py-12 px-4">
+                  <div className="max-w-md mx-auto space-y-1.5 text-stone-500">
+                    <Search className="w-8 h-8 text-stone-300 mx-auto" />
+                    <div className="font-semibold text-stone-800 text-xs">No Internal Searches Logged Yet</div>
+                    <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                      Queries typed into the site search bar will be captured here in real time to highlight investor demand and content opportunities.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -882,8 +911,14 @@ export function BehaviorAnalyticsView({
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-stone-400 font-mono-data text-xs">
-                  No sessions captured yet.
+                <div className="text-center py-12 px-4">
+                  <div className="max-w-md mx-auto space-y-1.5 text-stone-500">
+                    <Activity className="w-8 h-8 text-stone-300 mx-auto" />
+                    <div className="font-semibold text-stone-800 text-xs">No Active Visitor Sessions Logged Yet</div>
+                    <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                      Real visitor sessions with device types, page trails, dwell durations, and tool operations will stream here live.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

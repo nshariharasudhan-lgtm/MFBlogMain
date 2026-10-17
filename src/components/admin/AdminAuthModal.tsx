@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Lock, Mail, Key, AlertCircle, ArrowRight } from "lucide-react";
+import { Lock, Mail, Key, AlertCircle, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { AdminUser } from "../../types";
-import { loginAdmin } from "../../lib/storage";
+import { loginAdmin, DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from "../../lib/storage";
 
 interface AdminAuthModalProps {
   onSuccess: (user: AdminUser) => void;
@@ -9,8 +9,9 @@ interface AdminAuthModalProps {
 }
 
 export function AdminAuthModal({ onSuccess, onCancel }: AdminAuthModalProps) {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,9 +34,15 @@ export function AdminAuthModal({ onSuccess, onCancel }: AdminAuthModalProps) {
     }
   };
 
+  const handleFillDefaults = () => {
+    setEmail(DEFAULT_ADMIN_EMAIL);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
+    setError(null);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-      <div className="bg-[#FAF9F5] border border-[#E0DDD3] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative space-y-6">
+      <div className="bg-[#FAF9F5] border border-[#E0DDD3] rounded-2xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative space-y-5">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center mx-auto shadow-sm">
             <Lock className="w-5 h-5 text-amber-400" />
@@ -46,6 +53,27 @@ export function AdminAuthModal({ onSuccess, onCancel }: AdminAuthModalProps) {
           <p className="text-xs text-stone-500 font-sans">
             Secure access for mutual fund research publishing and dashboard management.
           </p>
+        </div>
+
+        {/* Credentials Reminder Card */}
+        <div className="p-3 bg-amber-50/90 border border-amber-200/90 text-stone-800 rounded-xl text-xs space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-amber-900 flex items-center gap-1.5">
+              <Key className="w-3.5 h-3.5 text-amber-700" />
+              <span>Administrator Login Details</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleFillDefaults}
+              className="text-[11px] text-amber-800 underline font-medium hover:text-amber-950 cursor-pointer"
+            >
+              Fill Default
+            </button>
+          </div>
+          <div className="font-mono-data text-[11px] text-stone-700 space-y-0.5">
+            <div>Email: <strong className="text-stone-900">{DEFAULT_ADMIN_EMAIL}</strong></div>
+            <div>Password: <strong className="text-stone-900">{DEFAULT_ADMIN_PASSWORD}</strong></div>
+          </div>
         </div>
 
         {error && (
@@ -80,13 +108,21 @@ export function AdminAuthModal({ onSuccess, onCancel }: AdminAuthModalProps) {
             <div className="relative">
               <Key className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password"
-                className="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-stone-900 font-mono-data"
+                className="w-full text-xs pl-9 pr-10 py-2.5 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-stone-900 font-mono-data"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 

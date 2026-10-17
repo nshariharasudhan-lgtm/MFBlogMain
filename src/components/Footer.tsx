@@ -136,6 +136,24 @@ export function Footer({
             <ul className="space-y-0.5 text-stone-600 text-xs">
               <li>
                 <a
+                  href="/compare"
+                  onClick={(e) => navigateTo(e, "/compare")}
+                  className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
+                >
+                  <span>⚔️ Fund Duels &amp; Comparisons</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/database"
+                  onClick={(e) => navigateTo(e, "/database")}
+                  className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
+                >
+                  <span>🗄️ AMFI Mutual Fund Database</span>
+                </a>
+              </li>
+              <li>
+                <a
                   href="/toolkit"
                   onClick={(e) => navigateTo(e, "/toolkit", onNavigateToolkit)}
                   className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
