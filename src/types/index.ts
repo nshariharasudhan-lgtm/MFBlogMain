@@ -30,6 +30,7 @@ export interface SEOMetadata {
   eeatScore?: number;
   riskRating?: string;
   canonicalUrl?: string;
+  dateModified?: string;
 }
 
 export interface SocialSnippet {

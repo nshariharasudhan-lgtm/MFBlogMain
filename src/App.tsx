@@ -44,9 +44,9 @@ import { CategoryPage } from "./components/CategoryPage";
 import { behaviorTracker } from "./lib/behaviorTracker";
 import { FundComparisonDossierPage } from "./components/comparisons/FundComparisonDossierPage";
 import { FundComparisonsHubPage } from "./components/comparisons/FundComparisonsHubPage";
-import { FundDatabasePage } from "./components/comparisons/FundDatabasePage";
 import { FundComparisonDossier } from "./types/comparison";
 import { getFundComparisonBySlug } from "./data/fundComparisonsData";
+import { getCalculatorRedirect, getArticleRedirect } from "./lib/redirects";
 
 // Code-split heavy components away from initial public visitor bundle
 const ArticleReader = lazy(() =>
@@ -260,7 +260,6 @@ function YieldNestApp() {
   const [activeStaticPage, setActiveStaticPage] = useState<"about" | "terms" | "methodology" | null>(null);
   const [isCompareHubView, setIsCompareHubView] = useState(false);
   const [selectedCompareDossier, setSelectedCompareDossier] = useState<FundComparisonDossier | null>(null);
-  const [isFundDatabaseView, setIsFundDatabaseView] = useState(false);
 
   // Initialize and handle URL routing (Instant zero-delay resolution from preloaded state)
   useEffect(() => {
@@ -316,7 +315,25 @@ function YieldNestApp() {
 
   const handleRouteFromUrl = (availablePosts?: ArticlePost[]) => {
     const rawPath = window.location.pathname;
-    const path = rawPath.replace(/\/+$/, "") || "/";
+    let path = rawPath.replace(/\/+$/, "") || "/";
+
+    // 1. Unify calculator URLs to /calculators/<name>
+    const calcRedirect = getCalculatorRedirect(path);
+    if (calcRedirect) {
+      window.history.replaceState({}, "", calcRedirect + window.location.search);
+      path = calcRedirect;
+    }
+
+    // 2. Redirect legacy / near-duplicate article slugs to calculators or guides
+    if (path.startsWith("/article/")) {
+      const slug = path.replace(/^\/article\//, "").replace(/\/+$/, "").toLowerCase();
+      const articleRedirect = getArticleRedirect(slug);
+      if (articleRedirect) {
+        window.history.replaceState({}, "", articleRedirect + window.location.search);
+        path = articleRedirect;
+      }
+    }
+
     const currentList = availablePosts && availablePosts.length > 0 ? availablePosts : posts;
     behaviorTracker.trackPageView(path);
 
@@ -354,7 +371,7 @@ function YieldNestApp() {
       setIsToolkitView(false);
     }
 
-    // AMFI Mutual Fund Live Database & Metadata Registry
+    // Legacy Database Paths -> Redirect to Toolkit Directory
     if (
       path === "/database" ||
       path === "/funds" ||
@@ -362,10 +379,10 @@ function YieldNestApp() {
       path === "/fund-database" ||
       path === "/amfi"
     ) {
-      setIsFundDatabaseView(true);
+      window.history.replaceState({}, "", "/toolkit");
+      setIsToolkitView(true);
       setIsCompareHubView(false);
       setSelectedCompareDossier(null);
-      setIsToolkitView(false);
       setIsHubsIndexView(false);
       setSelectedHub(null);
       setIsCalculatorView(false);
@@ -374,8 +391,6 @@ function YieldNestApp() {
       setPlaceholderView(null);
       setActiveStaticPage(null);
       return;
-    } else {
-      setIsFundDatabaseView(false);
     }
 
     // Mutual Fund Head-to-Head Comparisons & Tear Sheets
@@ -1024,7 +1039,6 @@ function YieldNestApp() {
     setActiveStaticPage(null);
     setIsCompareHubView(false);
     setSelectedCompareDossier(null);
-    setIsFundDatabaseView(false);
     setCurrentCategory("all");
     window.history.pushState({}, "", "/");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1034,7 +1048,6 @@ function YieldNestApp() {
   const handleNavigateCompare = () => {
     setIsCompareHubView(true);
     setSelectedCompareDossier(null);
-    setIsFundDatabaseView(false);
     setIsCalculatorView(false);
     setPlaceholderView(null);
     setSelectedArticle(null);
@@ -1047,30 +1060,12 @@ function YieldNestApp() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Navigate to Live AMFI Mutual Fund Database
-  const handleNavigateDatabase = () => {
-    setIsFundDatabaseView(true);
-    setIsCompareHubView(false);
-    setSelectedCompareDossier(null);
-    setIsCalculatorView(false);
-    setPlaceholderView(null);
-    setSelectedArticle(null);
-    setIsAdminView(false);
-    setSelectedHub(null);
-    setIsHubsIndexView(false);
-    setIsToolkitView(false);
-    setActiveStaticPage(null);
-    window.history.pushState({}, "", "/database");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   // Navigate to specific Head-to-Head Duel
   const handleSelectDuel = (slug: string) => {
     const dossier = getFundComparisonBySlug(slug);
     if (dossier) {
       setSelectedCompareDossier(dossier);
       setIsCompareHubView(false);
-      setIsFundDatabaseView(false);
       setIsCalculatorView(false);
       setPlaceholderView(null);
       setSelectedArticle(null);
@@ -1364,7 +1359,6 @@ function YieldNestApp() {
             onNavigateCalculators={() => handleOpenCalculators()}
             activeMenu="compare"
             onNavigateCompare={handleNavigateCompare}
-            onNavigateDatabase={handleNavigateDatabase}
             onNavigateFAQ={handleNavigateFAQ}
             onNavigateGlossary={handleNavigateGlossary}
             onNavigateGuides={handleNavigateGuides}
@@ -1377,60 +1371,11 @@ function YieldNestApp() {
           <main className="flex-1">
             <FundComparisonsHubPage
               onSelectDuel={handleSelectDuel}
-              onNavigateDatabase={handleNavigateDatabase}
               onDynamicDuelGenerated={(dossier) => {
                 setSelectedCompareDossier(dossier);
                 setIsCompareHubView(false);
                 window.history.pushState({}, "", `/compare/${dossier.slug}`);
                 window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          </main>
-          <Footer
-            settings={settings}
-            onSelectCategory={handleSelectCategory}
-            onNavigateCalculators={() => handleOpenCalculators()}
-            onNavigateCalculator={handleOpenCalculators}
-            onNavigateFAQ={handleNavigateFAQ}
-            onNavigateGlossary={handleNavigateGlossary}
-            onNavigateGuides={handleNavigateGuides}
-            onNavigateHubs={() => handleNavigateHub()}
-            onNavigateAbout={handleNavigateAbout}
-            onNavigateTerms={handleNavigateTerms}
-            onNavigateToolkit={handleNavigateToolkit}
-            onNavigateMethodology={handleNavigateMethodology}
-          />
-        </>
-      ) : isFundDatabaseView ? (
-        /* Real-Time AMFI Mutual Fund Registry & Ingestion Database Page */
-        <>
-          <Navbar
-            currentCategory="all"
-            onSelectCategory={handleSelectCategory}
-            onSearchChange={setSearchQuery}
-            searchQuery={searchQuery}
-            settings={settings}
-            onNavigateHome={handleBackToHome}
-            isCalculatorView={false}
-            onNavigateCalculators={() => handleOpenCalculators()}
-            activeMenu="database"
-            onNavigateCompare={handleNavigateCompare}
-            onNavigateDatabase={handleNavigateDatabase}
-            onNavigateFAQ={handleNavigateFAQ}
-            onNavigateGlossary={handleNavigateGlossary}
-            onNavigateGuides={handleNavigateGuides}
-            onNavigateHubs={() => handleNavigateHub()}
-            onNavigateAbout={handleNavigateAbout}
-            onNavigateTerms={handleNavigateTerms}
-            onNavigateToolkit={handleNavigateToolkit}
-            onNavigateMethodology={handleNavigateMethodology}
-          />
-          <main className="flex-1">
-            <FundDatabasePage
-              onNavigateHome={handleBackToHome}
-              onNavigateCompare={handleNavigateCompare}
-              onLaunchDuel={() => {
-                handleNavigateCompare();
               }}
             />
           </main>
@@ -1988,7 +1933,6 @@ function YieldNestApp() {
             onNavigateToolkit={handleNavigateToolkit}
             onNavigateMethodology={handleNavigateMethodology}
             onNavigateCompare={handleNavigateCompare}
-            onNavigateDatabase={handleNavigateDatabase}
           />
 
           <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-10">
@@ -2002,7 +1946,6 @@ function YieldNestApp() {
               onNavigateGlossary={handleNavigateGlossary}
               onNavigateToolkit={handleNavigateToolkit}
               onNavigateCompare={handleNavigateCompare}
-              onNavigateDatabase={handleNavigateDatabase}
             />
 
             {/* Loading State */}

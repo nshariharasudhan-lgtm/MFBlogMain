@@ -1,10 +1,11 @@
 import { ArticlePost, Comment, SiteSettings, SocialSnippet, AdminUser, Subscriber } from "../types";
 import { DEFAULT_SITE_SETTINGS, INITIAL_ARTICLES, INITIAL_COMMENTS } from "./seedData";
+import { CANONICAL_EVERGREEN_SLUGS } from "./evergreenGuides";
 import { getSupabaseClient, sanitizeSupabaseUrl, getSupabaseAnonKey } from "./supabaseClient";
 
-const POSTS_KEY = "nivesh_articles_v1";
-const COMMENTS_KEY = "nivesh_comments_v1";
-const SETTINGS_KEY = "nivesh_settings_v1";
+const POSTS_KEY = "yieldnest_evergreen_guides_v2";
+const COMMENTS_KEY = "yieldnest_comments_v2";
+const SETTINGS_KEY = "yieldnest_settings_v2";
 const SOCIAL_KEY = "nivesh_social_v1";
 const SUBSCRIBERS_KEY = "nivesh_subscribers_v1";
 const ADMIN_SESSION_KEY = "nivesh_admin_session_v1";
@@ -394,8 +395,8 @@ function getLocalPosts(): ArticlePost[] {
 
       return {
         ...p,
-        authorName: "Research Desk",
-        authorTitle: "YieldNest Research Desk",
+        authorName: "YieldNest Editorial Team",
+        authorTitle: "Mutual Fund Data & Tools Desk",
         publishedAt,
         ...(seedMatch ? {
           publishedAt: seedMatch.publishedAt,
@@ -414,11 +415,13 @@ function getLocalPosts(): ArticlePost[] {
       };
     });
 
-    const sorted = updated.sort((a, b) => {
-      const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
-      const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
-      return timeB - timeA;
-    });
+    const sorted = updated
+      .filter((p) => CANONICAL_EVERGREEN_SLUGS.has(p.slug))
+      .sort((a, b) => {
+        const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
 
     localStorage.setItem(POSTS_KEY, JSON.stringify(sorted));
     return sorted;
@@ -567,7 +570,9 @@ export async function getAllPosts(forceRefresh = false): Promise<ArticlePost[]> 
           }
         }
 
-        const sorted = Array.from(postMap.values()).sort((a, b) => {
+        const sorted = Array.from(postMap.values())
+          .filter((p) => CANONICAL_EVERGREEN_SLUGS.has(p.slug))
+          .sort((a, b) => {
           const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
           const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
           return timeB - timeA;

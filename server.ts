@@ -8,6 +8,12 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { INITIAL_ARTICLES } from "./src/lib/seedData";
+import { CANONICAL_EVERGREEN_SLUGS } from "./src/lib/evergreenGuides";
+import {
+  ARTICLE_REDIRECTS,
+  getArticleRedirect,
+  getCalculatorRedirect,
+} from "./src/lib/redirects";
 import {
   LEGACY_ALIASES,
   buildLlmsTxtString,
@@ -41,7 +47,6 @@ app.set("trust proxy", 1);
 // -------------------------------------------------------------
 app.use((_req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader(
@@ -68,6 +73,36 @@ app.use((req, res, next) => {
     const cleanPath = req.path.slice(0, -1);
     return res.redirect(301, cleanPath + query);
   }
+
+  // 301 redirect /calculator/* to /calculators/*
+  const calcRedirect = getCalculatorRedirect(req.path);
+  if (calcRedirect) {
+    const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    return res.redirect(301, calcRedirect + query);
+  }
+
+  // 301 redirect near-duplicate legacy articles to matching calculators or guides
+  if (req.path.startsWith("/article/")) {
+    const slug = req.path.replace(/^\/article\//, "").split("?")[0].toLowerCase();
+    const articleRedirect = getArticleRedirect(slug);
+    if (articleRedirect) {
+      const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+      return res.redirect(301, articleRedirect + query);
+    }
+  }
+
+  // 301 redirect legacy /database and /amfi-database paths to /toolkit
+  if (
+    req.path === "/database" ||
+    req.path === "/funds" ||
+    req.path === "/amfi-database" ||
+    req.path === "/fund-database" ||
+    req.path === "/amfi"
+  ) {
+    const query = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    return res.redirect(301, `/toolkit${query}`);
+  }
+
   next();
 });
 
@@ -1213,10 +1248,10 @@ Include 2–5 natural, contextual links to existing YieldNest tools and guides:
   * [Goal Planner Calculator](/calculators/goal-planner)
   * [Mutual Fund Tax Estimator](/calculators/tax-estimator)
   * [Direct vs Regular Drag Calculator](/calculators/direct-vs-regular)
-  * [Cost of Delay Calculator](/calculator/cost-of-delay)
+  * [Cost of Delay Calculator](/calculators/cost-of-delay)
   * [All Calculators Suite](/calculators)
 - Guides & Pillars:
-  * [Direct vs Regular Mutual Funds: Compounding Drag & Commissions](/article/direct-vs-regular-mutual-funds-charges-commissions-compounding)
+  * [Direct vs Regular Mutual Funds: Compounding Drag & Commissions](/article/direct-vs-regular-mutual-funds-difference)
   * [How to Evaluate Mutual Fund Performance: Rolling Returns, Alpha & Beta](/article/evaluating-mutual-fund-performance-rolling-returns-risk-ratios)
   * [How to Choose a Mutual Fund Guide](/guides/how-to-choose-a-mutual-fund)
   * [Mutual Fund Redemption Checklist](/guides/redemption-checklist)
@@ -1522,6 +1557,7 @@ async function getAllAggregatedArticles(onlyPublished = false): Promise<any[]> {
 
   const now = Date.now();
   return Array.from(articlesMap.values())
+    .filter((p) => CANONICAL_EVERGREEN_SLUGS.has(p.slug))
     .map((p) => {
       let pubAt = p.publishedAt;
       if (p.status === "published" && pubAt && new Date(pubAt).getTime() > now) {
@@ -2611,6 +2647,10 @@ function setupProductionRoutes() {
     try {
       if (!fs.existsSync(indexPath)) return next();
       const slug = req.params.slug;
+      const redirect = getArticleRedirect(slug);
+      if (redirect) {
+        return res.redirect(301, redirect);
+      }
       const alias = LEGACY_ALIASES.find((a) => a.sourceSlug === slug);
       if (alias) {
         return res.redirect(301, `/article/${alias.targetSlug}`);
@@ -2765,6 +2805,10 @@ async function startDevServer() {
   app.get("/article/:slug", async (req, res, next) => {
     try {
       const slug = req.params.slug;
+      const redirect = getArticleRedirect(slug);
+      if (redirect) {
+        return res.redirect(301, redirect);
+      }
       const alias = LEGACY_ALIASES.find((a) => a.sourceSlug === slug);
       if (alias) {
         return res.redirect(301, `/article/${alias.targetSlug}`);

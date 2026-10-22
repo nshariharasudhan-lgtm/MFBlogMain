@@ -1034,22 +1034,22 @@ export function ArticleReader({
           </p>
           <div className="space-y-1.5 font-mono-data text-[11px]">
             <a
-              href="/calculator/direct-vs-regular"
+              href="/calculators/direct-vs-regular"
               className="block p-2 rounded-lg bg-[#FAF9F5] border border-stone-200/80 hover:border-emerald-600/40 text-stone-800 hover:text-emerald-800 transition-colors"
             >
               Direct vs Regular TER Drag
             </a>
             <a
-              href="/calculator/step-up-sip"
+              href="/calculators/step-up-sip"
               className="block p-2 rounded-lg bg-[#FAF9F5] border border-stone-200/80 hover:border-emerald-600/40 text-stone-800 hover:text-emerald-800 transition-colors"
             >
               Step-Up SIP Compounding
             </a>
             <a
-              href="/calculator/cost-of-delay"
+              href="/calculators/cost-of-delay"
               className="block p-2 rounded-lg bg-[#FAF9F5] border border-stone-200/80 hover:border-emerald-600/40 text-stone-800 hover:text-emerald-800 transition-colors"
             >
-              Cost of Delay Tax
+              Cost of Delay Opportunity Drag
             </a>
           </div>
         </div>

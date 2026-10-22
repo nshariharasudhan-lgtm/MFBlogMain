@@ -157,7 +157,7 @@ export function YieldNestLogo({
               isSmall ? "text-[8.5px]" : "text-[10px] sm:text-xs md:text-[13px]"
             }`}
           >
-            MUTUAL FUND RESEARCH &amp; ANALYTICS
+            MUTUAL FUND DATA &amp; TOOLS
           </div>
 
           <div className="flex items-center justify-center gap-2 sm:gap-3 mt-1 px-2">
@@ -165,7 +165,7 @@ export function YieldNestLogo({
             <span
               className={`font-sans font-semibold tracking-wider text-stone-600 uppercase text-[8.5px] sm:text-[10.5px] truncate`}
             >
-              FUND COMPARISON | PERFORMANCE ANALYSIS | SIP INSIGHTS
+              CALCULATORS · FUND COMPARISONS · FACTUAL GUIDES
             </span>
             <div className="h-[1px] bg-stone-300 flex-1 max-w-[60px] sm:max-w-[120px]"></div>
           </div>

@@ -11,7 +11,6 @@ import {
   ArrowRightLeft,
   Search,
   Filter,
-  Database,
 } from "lucide-react";
 import { FundComparisonDossier, FundProfile } from "../../types/comparison";
 import {
@@ -23,13 +22,11 @@ import {
 interface FundComparisonsHubPageProps {
   onSelectDuel: (slug: string) => void;
   onDynamicDuelGenerated?: (dossier: FundComparisonDossier) => void;
-  onNavigateDatabase?: () => void;
 }
 
 export function FundComparisonsHubPage({
   onSelectDuel,
   onDynamicDuelGenerated,
-  onNavigateDatabase,
 }: FundComparisonsHubPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [fundAId, setFundAId] = useState<string>("parag-parikh-flexi-cap");
@@ -87,37 +84,6 @@ export function FundComparisonsHubPage({
           <strong> true portfolio stock overlap %</strong>, and <strong>live SIP outcome simulators</strong>.
         </p>
 
-        {/* Live AMFI Database Feature Strip */}
-        <div className="bg-stone-900 text-white rounded-xl p-4 sm:p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-stone-800 shadow-md">
-          <div className="flex items-center gap-3.5">
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              <Database className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
-                  Official AMFI Registry
-                </span>
-                <span className="text-[10px] font-mono bg-stone-800 text-stone-300 px-2 py-0.5 rounded">
-                  Daily NAVs · ISINs · Supabase Sync
-                </span>
-              </div>
-              <h3 className="font-serif text-base sm:text-lg font-bold text-stone-100 mt-0.5">
-                Explore Full 400+ AMFI Mutual Fund Database
-              </h3>
-            </div>
-          </div>
-          <button
-            onClick={onNavigateDatabase || (() => {
-              window.history.pushState({}, "", "/database");
-              window.dispatchEvent(new PopStateEvent("popstate"));
-            })}
-            className="bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-mono text-xs font-bold px-4 py-2.5 rounded transition-colors flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-sm"
-          >
-            <span>Open Database</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
         {/* =========================================================================
             CUSTOM DUEL BUILDER WIDGET

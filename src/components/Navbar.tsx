@@ -17,7 +17,6 @@ import {
   ArrowRight,
   ExternalLink,
   DollarSign,
-  Database,
 } from "lucide-react";
 import { ArticleCategory, SiteSettings } from "../types";
 import { YieldNestLogo } from "./YieldNestLogo";
@@ -38,7 +37,6 @@ interface NavbarProps {
   activeMenu?:
     | "calculators"
     | "compare"
-    | "database"
     | "faq"
     | "glossary"
     | "guides"
@@ -50,7 +48,6 @@ interface NavbarProps {
     | "methodology"
     | "none";
   onNavigateCompare?: () => void;
-  onNavigateDatabase?: () => void;
   onNavigateFAQ?: () => void;
   onNavigateGlossary?: () => void;
   onNavigateGuides?: () => void;
@@ -85,7 +82,6 @@ export function Navbar({
   onNavigateCalculators,
   activeMenu = "none",
   onNavigateCompare,
-  onNavigateDatabase,
   onNavigateFAQ,
   onNavigateGlossary,
   onNavigateGuides,
@@ -141,7 +137,7 @@ export function Navbar({
 
   const hasDirectMatches = matchedCalculators.length > 0 || matchedHubs.length > 0 || matchedGlossary.length > 0;
 
-  // Clear Main Navigation Menu Items
+  // Leading Tools and Data Navigation
   const primaryNavItems = [
     {
       id: "calculators",
@@ -153,54 +149,19 @@ export function Navbar({
     },
     {
       id: "fund-comparisons",
-      label: "Fund Duels",
+      label: "Fund Comparison",
       href: "/compare",
       icon: Scale,
-      isActive: activeMenu === "compare" || currentCategory === "Fund Comparison",
-      onClick: onNavigateCompare || (() => onSelectCategory("Fund Comparison")),
+      isActive: activeMenu === "compare",
+      onClick: onNavigateCompare,
     },
     {
-      id: "fund-database",
-      label: "AMFI Registry",
-      href: "/database",
-      icon: Database,
-      isActive: activeMenu === "database",
-      onClick: onNavigateDatabase || (() => {
-        window.history.pushState({}, "", "/database");
-        window.dispatchEvent(new PopStateEvent("popstate"));
-      }),
-    },
-    {
-      id: "sip",
-      label: "SIP Hub",
-      href: "/hub/sip-swp-stp",
-      icon: TrendingUp,
-      isActive: false,
-      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("sip-swp-stp") : onNavigateHubs?.()),
-    },
-    {
-      id: "costs",
-      label: "Costs & Fees",
-      href: "/hub/fees",
-      icon: DollarSign,
-      isActive: false,
-      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("fees") : onNavigateHubs?.()),
-    },
-    {
-      id: "risk",
-      label: "Risk & Analytics",
-      href: "/hub/safety-and-risk",
-      icon: ShieldCheck,
-      isActive: false,
-      onClick: () => (onOpenHubBySlug ? onOpenHubBySlug("safety-and-risk") : onNavigateHubs?.()),
-    },
-    {
-      id: "market-insights",
-      label: "Market Insights",
-      href: "/category/market-trends",
-      icon: Compass,
-      isActive: currentCategory === "Market Trends" && !isCalculatorView,
-      onClick: () => onSelectCategory("Market Trends"),
+      id: "guides",
+      label: "Investor Guides",
+      href: "/guides",
+      icon: BookOpen,
+      isActive: activeMenu === "guides",
+      onClick: onNavigateGuides,
     },
     {
       id: "methodology",
@@ -209,6 +170,14 @@ export function Navbar({
       icon: FileText,
       isActive: activeMenu === "methodology",
       onClick: onNavigateMethodology,
+    },
+    {
+      id: "about",
+      label: "About",
+      href: "/about",
+      icon: Users,
+      isActive: activeMenu === "about",
+      onClick: onNavigateAbout,
     },
     {
       id: "glossary",
@@ -226,7 +195,7 @@ export function Navbar({
       <div className="bg-[#1C1A17] text-stone-300 text-[10px] sm:text-[11px] font-mono-data py-1 px-3 border-b border-stone-800 flex items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
         <span className="truncate">
-          <strong className="text-stone-200">Statutory Notice:</strong> Educational &amp; research analytics only. Not registered investment advice.
+          <strong className="text-stone-200">Statutory Notice:</strong> Mutual fund data &amp; tools for educational purposes only. Not registered investment advice.
         </span>
       </div>
 

@@ -76,10 +76,10 @@ export function Footer({
               <YieldNestLogo size="sm" showTagline={false} />
             </div>
             <p className="text-stone-600 text-xs sm:text-sm leading-relaxed max-w-sm">
-              {settings.description || "Data-driven research on Indian Mutual Funds. Unbiased fund comparisons, rolling return evaluations, portfolio overlap checks, and market analytics."}
+              {settings.description || "Data-driven tools and historical metrics for Indian Mutual Funds. Scheme comparisons, compounding calculators, and factual educational guides on YieldNest.online."}
             </p>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-stone-200/70 text-stone-800 text-[11px] font-mono-data">
-              <span>Status: Independent Investor Education • yieldnest.online</span>
+              <span>Status: Mutual Fund Data &amp; Tools • yieldnest.online</span>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2 pt-1 text-[11px] text-stone-600 font-mono-data flex-wrap">
               <a
@@ -108,10 +108,10 @@ export function Footer({
             </div>
           </div>
 
-          {/* Research Categories */}
+          {/* Mutual Fund Categories */}
           <div className="md:col-span-4 space-y-3">
             <div className="font-semibold text-stone-900 font-mono-data uppercase tracking-wider text-[11px]">
-              Research Categories
+              Mutual Fund Categories
             </div>
             <ul className="space-y-1">
               {categories.map((cat) => (
@@ -141,15 +141,6 @@ export function Footer({
                   className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
                 >
                   <span>⚔️ Fund Duels &amp; Comparisons</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/database"
-                  onClick={(e) => navigateTo(e, "/database")}
-                  className="text-stone-900 font-semibold hover:text-black transition-colors flex items-center gap-1.5 py-2 px-1 min-h-[44px] text-xs"
-                >
-                  <span>🗄️ AMFI Mutual Fund Database</span>
                 </a>
               </li>
               <li>

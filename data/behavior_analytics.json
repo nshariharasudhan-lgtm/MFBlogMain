@@ -3,12 +3,12 @@
   "version": 1,
   "description": "Dedicated behavioral intelligence database - strictly isolated from Supabase CMS",
   "createdAt": "2026-10-13T13:40:50.109Z",
-  "lastUpdated": "2026-10-17T10:23:28.554Z",
+  "lastUpdated": "2026-10-22T18:23:04.207Z",
   "summary": {
-    "totalSessions": 1,
-    "totalPageViews": 2,
+    "totalSessions": 3,
+    "totalPageViews": 3,
     "totalToolInteractions": 0,
-    "totalActiveReadingMinutes": 7.9999999999999964,
+    "totalActiveReadingMinutes": 27.500000000000043,
     "avgDwellSecondsPerSession": 0
   },
   "contentAffinity": {},
@@ -19,6 +19,28 @@
   },
   "searchQueries": {},
   "recentSessions": [
+    {
+      "sessionId": "sess-mvjv2qni-jbeyu",
+      "startedAt": "2026-10-22T18:15:42.200Z",
+      "lastActiveAt": "2026-10-22T18:23:02.207Z",
+      "deviceType": "mobile",
+      "pagesVisited": [
+        "/"
+      ],
+      "toolsUsed": [],
+      "totalDurationSeconds": 460
+    },
+    {
+      "sessionId": "sess-mvf9o2vb-9sgwc",
+      "startedAt": "2026-10-19T13:05:01.385Z",
+      "lastActiveAt": "2026-10-19T13:19:25.406Z",
+      "deviceType": "mobile",
+      "pagesVisited": [
+        "/"
+      ],
+      "toolsUsed": [],
+      "totalDurationSeconds": 850
+    },
     {
       "sessionId": "sess-mvc88a3g-w9hga",
       "startedAt": "2026-10-17T10:14:53.497Z",

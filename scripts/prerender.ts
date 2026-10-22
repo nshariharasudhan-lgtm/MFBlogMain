@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { INITIAL_ARTICLES } from "../src/lib/seedData";
+import { CANONICAL_EVERGREEN_SLUGS } from "../src/lib/evergreenGuides";
 import { GLOSSARY_TERMS } from "../src/data/glossaryData";
 import { TOPIC_HUBS, TopicHubData } from "../src/data/topicHubsData";
 import { DUE_DILIGENCE_CHECKLIST, REDEMPTION_CHECKLIST, FUND_CATEGORIES } from "../src/data/guidesData";
@@ -59,72 +60,17 @@ const CATEGORY_NAME_TO_SLUG: Record<string, string> = {
   "SIP Strategies": "sip-strategies",
 };
 
-export const LEGACY_ALIASES: Array<{ sourceSlug: string; targetSlug: string }> = [
-  {
-    sourceSlug: "direct-vs-regular-mutual-funds-charges-commissions-compissions",
-    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
-  },
-  {
-    sourceSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market-volatility",
-    targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
-  },
-  {
-    sourceSlug: "total-expense-ratio-ter-breakdown-impact-sip-returns",
-    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
-  },
-  {
-    sourceSlug: "direct-vs-regular-plans-true-cost-distributor-commissions",
-    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
-  },
-  {
-    sourceSlug: "direct-vs-regular-mutual-funds-difference",
-    targetSlug: "direct-vs-regular-mutual-funds-charges-commissions-compounding",
-  },
-  {
-    sourceSlug: "total-expense-ratio-compounding-cost-drag-10-20-30-years",
-    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
-  },
-  {
-    sourceSlug: "what-is-expense-ratio-impact-on-returns",
-    targetSlug: "why-total-expense-ratio-ter-is-important-for-investors",
-  },
-  {
-    sourceSlug: "sip-vs-lump-sum-which-is-better",
-    targetSlug: "sip-vs-lumpsum-quantitative-return-comparison-market-cycles",
-  },
-  {
-    sourceSlug: "index-fund-vs-active-mutual-fund-india",
-    targetSlug: "index-funds-vs-active-funds-india-tracking-error-alpha-decay",
-  },
-  {
-    sourceSlug: "large-cap-vs-large-and-mid-cap-funds",
-    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
-  },
-  {
-    sourceSlug: "large-cap-vs-mid-cap-vs-small-cap-difference",
-    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
-  },
-  {
-    sourceSlug: "flexi-cap-vs-large-cap-difference",
-    targetSlug: "large-cap-vs-flexi-cap-vs-mid-cap-funds-allocation-strategy",
-  },
-  {
-    sourceSlug: "mid-cap-vs-small-cap-funds-risk-return",
-    targetSlug: "mid-cap-vs-small-cap-analyzing-risk-adjusted-returns-amidst-current-market",
-  },
-  {
-    sourceSlug: "how-mutual-fund-capital-gains-are-taxed-equity-vs-debt",
-    targetSlug: "mutual-fund-taxation-india-guide",
-  },
-  {
-    sourceSlug: "are-mutual-funds-tax-free-india-guide",
-    targetSlug: "mutual-fund-taxation-india-guide",
-  },
-  {
-    sourceSlug: "best-mutual-funds-india-performance-analysis-2024",
-    targetSlug: "best-mutual-funds-india-2026-data-analysis",
-  },
-];
+import { ARTICLE_REDIRECTS, getArticleRedirect, getCalculatorRedirect } from "../src/lib/redirects";
+
+export { ARTICLE_REDIRECTS, getArticleRedirect, getCalculatorRedirect };
+
+export const LEGACY_ALIASES: Array<{ sourceSlug: string; targetUrl: string; targetSlug?: string }> = Object.entries(ARTICLE_REDIRECTS).map(
+  ([sourceSlug, targetUrl]) => ({
+    sourceSlug,
+    targetUrl,
+    targetSlug: targetUrl.startsWith("/article/") ? targetUrl.replace("/article/", "") : undefined,
+  })
+);
 
 function escapeHtml(str: string): string {
   if (!str) return "";
@@ -329,11 +275,13 @@ async function loadAllArticles(): Promise<any[]> {
     }
   }
 
-  return Array.from(articlesMap.values()).sort((a, b) => {
-    const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
-    const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
-    return timeB - timeA;
-  });
+  return Array.from(articlesMap.values())
+    .filter((a) => CANONICAL_EVERGREEN_SLUGS.has(a.slug))
+    .sort((a, b) => {
+      const timeA = new Date(a.publishedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.publishedAt || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
 }
 
 function buildSharedFooterHtml(): string {
@@ -456,19 +404,19 @@ function injectHomepage(template: string, articles: any[]): string {
           Mathematically simulate Total Expense Ratio drag, annual step-up compounding, SIP delay penalties, and lumpsum entry dynamics under Indian market conditions.
         </p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem;">
-          <a href="/calculator/direct-vs-regular" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+          <a href="/calculators/direct-vs-regular" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
             <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Direct vs Regular Calculator</strong>
             <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Calculate how much corpus you forfeit to distributor trail commissions &amp; TER drag.</span>
           </a>
-          <a href="/calculator/step-up-sip" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+          <a href="/calculators/step-up-sip" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
             <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Step-Up SIP Calculator</strong>
             <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Model compounding acceleration by increasing your monthly SIP by 5% to 25% each year.</span>
           </a>
-          <a href="/calculator/cost-of-delay" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+          <a href="/calculators/cost-of-delay" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
             <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">Cost of Delay Calculator</strong>
             <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Find out the compound interest penalty of waiting 6 months to 5 years before starting.</span>
           </a>
-          <a href="/calculator/sip-vs-lumpsum" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
+          <a href="/calculators/sip-vs-lumpsum" style="padding:1rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.5rem;text-decoration:none;color:#1a1a1a;display:block;">
             <strong style="display:block;font-size:0.95rem;color:#1a1a1a;margin-bottom:0.25rem;">SIP vs Lumpsum Comparator</strong>
             <span style="font-size:0.8rem;color:#78716c;line-height:1.4;display:block;">Compare rupee-cost averaging against a one-time lump-sum allocation with delta analytics.</span>
           </a>
@@ -476,7 +424,7 @@ function injectHomepage(template: string, articles: any[]): string {
       </section>
 
       <h2 style="font-size:1.2rem;font-family:monospace;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;color:#292524;">
-        Mutual Fund Research &amp; Analysis
+        Mutual Fund Data &amp; Tools
       </h2>
       <div style="display:flex;flex-direction:column;gap:1.5rem;">
         ${articles
@@ -774,10 +722,10 @@ function injectArticle(template: string, article: any): string {
         <h3 style="font-size:1.1rem;font-weight:700;color:#1a1a1a;margin-bottom:0.5rem;">Explore Quantitative Investment Calculators</h3>
         <p style="font-size:0.85rem;color:#57534e;line-height:1.5;margin-bottom:1rem;">Model compounding math, fee friction, and optimal asset allocation on YieldNest:</p>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;font-size:0.8rem;font-family:monospace;">
-          <a href="/calculator/direct-vs-regular" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Direct vs Regular TER Drag</a>
-          <a href="/calculator/step-up-sip" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Step-Up SIP Calculator</a>
-          <a href="/calculator/cost-of-delay" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Cost of Delay Tax</a>
-          <a href="/calculator/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">SIP vs Lumpsum Comparator</a>
+          <a href="/calculators/direct-vs-regular" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Direct vs Regular TER Drag</a>
+          <a href="/calculators/step-up-sip" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Step-Up SIP Calculator</a>
+          <a href="/calculators/cost-of-delay" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">Cost of Delay Opportunity Drag</a>
+          <a href="/calculators/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:#ffffff;border:1px solid #d6d3d1;border-radius:0.35rem;text-decoration:none;color:#1a1a1a;">SIP vs Lumpsum Comparator</a>
         </div>
       </section>
       ${buildSharedFooterHtml()}
@@ -815,13 +763,7 @@ export function buildSitemapXmlString(articles: any[]): string {
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
-  </url>
-  <url>
-    <loc>${CANONICAL_ORIGIN}/database</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.95</priority>
-  </url>
+
   <url>
     <loc>${CANONICAL_ORIGIN}/compare/parag-parikh-flexi-cap-vs-hdfc-flexi-cap</loc>
     <lastmod>${today}</lastmod>
@@ -1170,19 +1112,19 @@ function injectCalculatorPage(template: string, calc: { slug: string; path: stri
         </p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:1.5rem;margin-bottom:2.5rem;">
           <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
-            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/direct-vs-regular" style="color:#047857;text-decoration:underline;">Direct vs Regular Calculator</a></h2>
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculators/direct-vs-regular" style="color:#047857;text-decoration:underline;">Direct vs Regular Calculator</a></h2>
             <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Evaluate the terminal wealth drag caused by distributor trail commissions (0.50% - 1.50% TER differences) over 10 to 30 years.</p>
           </div>
           <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
-            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/step-up-sip" style="color:#047857;text-decoration:underline;">Step-Up SIP Calculator</a></h2>
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculators/step-up-sip" style="color:#047857;text-decoration:underline;">Step-Up SIP Calculator</a></h2>
             <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Simulate compounding acceleration when you increase monthly contributions by 5% to 25% each year with your salary hikes.</p>
           </div>
           <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
-            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/cost-of-delay" style="color:#047857;text-decoration:underline;">Cost of Delay Calculator</a></h2>
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculators/cost-of-delay" style="color:#047857;text-decoration:underline;">Cost of Delay Calculator</a></h2>
             <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Calculate the compound interest penalty of waiting 6 months, 1 year, or 2 years before initiating your investment program.</p>
           </div>
           <div style="padding:1.5rem;background:#ffffff;border:1px solid #eae8e0;border-radius:0.75rem;">
-            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculator/sip-vs-lumpsum" style="color:#047857;text-decoration:underline;">SIP vs Lumpsum Comparator</a></h2>
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;"><a href="/calculators/sip-vs-lumpsum" style="color:#047857;text-decoration:underline;">SIP vs Lumpsum Comparator</a></h2>
             <p style="font-size:0.85rem;color:#57534e;line-height:1.5;">Analyze risk and return trade-offs between a single lump-sum deployment and rupee-cost averaged monthly installments.</p>
           </div>
         </div>
@@ -1195,10 +1137,10 @@ function injectCalculatorPage(template: string, calc: { slug: string; path: stri
     </nav>
     <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;font-size:0.8rem;font-family:monospace;">
       <a href="/calculators" style="padding:0.4rem 0.8rem;background:${calc.slug === 'calculators' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Suite Hub</a>
-      <a href="/calculator/direct-vs-regular" style="padding:0.4rem 0.8rem;background:${calc.slug === 'direct-vs-regular' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Direct vs Regular</a>
-      <a href="/calculator/step-up-sip" style="padding:0.4rem 0.8rem;background:${calc.slug === 'step-up-sip' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Step-Up SIP</a>
-      <a href="/calculator/cost-of-delay" style="padding:0.4rem 0.8rem;background:${calc.slug === 'cost-of-delay' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Cost of Delay</a>
-      <a href="/calculator/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:${calc.slug === 'sip-vs-lumpsum' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">SIP vs Lumpsum</a>
+      <a href="/calculators/direct-vs-regular" style="padding:0.4rem 0.8rem;background:${calc.slug === 'direct-vs-regular' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Direct vs Regular</a>
+      <a href="/calculators/step-up-sip" style="padding:0.4rem 0.8rem;background:${calc.slug === 'step-up-sip' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Step-Up SIP</a>
+      <a href="/calculators/cost-of-delay" style="padding:0.4rem 0.8rem;background:${calc.slug === 'cost-of-delay' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">Cost of Delay</a>
+      <a href="/calculators/sip-vs-lumpsum" style="padding:0.4rem 0.8rem;background:${calc.slug === 'sip-vs-lumpsum' ? '#1a1a1a;color:#ffffff;' : '#eae8e0;color:#1a1a1a;'}border-radius:0.35rem;text-decoration:none;">SIP vs Lumpsum</a>
     </div>
     ${mainBody}
     ${buildSharedFooterHtml()}
@@ -2492,7 +2434,6 @@ export function buildLlmsTxtString(articles: any[]): string {
 ## Mutual Fund Head-to-Head Comparisons & Overlap Dossiers
 
 - [Fund Comparisons Directory Hub](${CANONICAL_ORIGIN}/compare): Interactive executive battlecards comparing top Indian mutual funds with portfolio stock overlap % and live SIP outcome simulators.
-- [AMFI Mutual Fund Registry & Database](${CANONICAL_ORIGIN}/database): Real-time live database of Indian mutual fund schemes with official daily NAVs, ISIN codes, direct vs regular plan tracking, and Supabase cloud synchronization.
 - [Parag Parikh Flexi Cap vs HDFC Flexi Cap](${CANONICAL_ORIGIN}/compare/parag-parikh-flexi-cap-vs-hdfc-flexi-cap): Value investing & foreign tech moats vs domestic cyclical momentum.
 - [Nippon India Small Cap vs Quant Small Cap](${CANONICAL_ORIGIN}/compare/nippon-india-small-cap-vs-quant-small-cap): 200-stock diversified compounding vs quantitative predictive momentum.
 - [Mirae Asset Large & Midcap vs Motilal Oswal Large and Midcap](${CANONICAL_ORIGIN}/compare/mirae-asset-large-midcap-vs-motilal-oswal-large-midcap): 50:50 GARP consistency vs 30-stock high-conviction momentum.
@@ -2853,16 +2794,78 @@ async function runPrerender() {
 
   // 3d. Generate static HTML fallbacks for all legacy/typo slugs so direct file access never 404s
   for (const alias of LEGACY_ALIASES) {
-    const targetArt = articles.find((a) => a.slug === alias.targetSlug);
-    if (targetArt) {
-      const targetHtml = injectArticle(baseHtml, targetArt);
-      const aliasDir = path.join(distDir, "article", alias.sourceSlug);
-      fs.mkdirSync(aliasDir, { recursive: true });
-      fs.writeFileSync(path.join(distDir, "article", `${alias.sourceSlug}.html`), targetHtml, "utf-8");
-      fs.writeFileSync(path.join(aliasDir, "index.html"), targetHtml, "utf-8");
-      console.log(`  ✓ Created static fallback alias for /article/${alias.sourceSlug} -> /article/${alias.targetSlug}`);
+    const redirectHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=${alias.targetUrl}">
+  <link rel="canonical" href="${CANONICAL_ORIGIN}${alias.targetUrl}">
+  <title>Redirecting to YieldNest...</title>
+</head>
+<body>
+  <p>Redirecting to <a href="${alias.targetUrl}">${CANONICAL_ORIGIN}${alias.targetUrl}</a>...</p>
+  <script>window.location.replace("${alias.targetUrl}");</script>
+</body>
+</html>`;
+    const aliasDir = path.join(distDir, "article", alias.sourceSlug);
+    fs.mkdirSync(aliasDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, "article", `${alias.sourceSlug}.html`), redirectHtml, "utf-8");
+    fs.writeFileSync(path.join(aliasDir, "index.html"), redirectHtml, "utf-8");
+  }
+  console.log(`  ✓ Generated 301 static redirect fallbacks for ${LEGACY_ALIASES.length} legacy article aliases`);
+
+  // 3d-2. Generate static HTML fallbacks for all ARTICLE_REDIRECTS so static CDN serving also redirects seamlessly
+  for (const [sourceSlug, targetUrl] of Object.entries(ARTICLE_REDIRECTS)) {
+    const redirectHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=${targetUrl}">
+  <link rel="canonical" href="${CANONICAL_ORIGIN}${targetUrl}">
+  <title>Redirecting to YieldNest...</title>
+</head>
+<body>
+  <p>Redirecting to <a href="${targetUrl}">${CANONICAL_ORIGIN}${targetUrl}</a>...</p>
+  <script>window.location.replace("${targetUrl}");</script>
+</body>
+</html>`;
+    const aliasDir = path.join(distDir, "article", sourceSlug);
+    fs.mkdirSync(aliasDir, { recursive: true });
+    fs.writeFileSync(path.join(distDir, "article", `${sourceSlug}.html`), redirectHtml, "utf-8");
+    fs.writeFileSync(path.join(aliasDir, "index.html"), redirectHtml, "utf-8");
+  }
+  console.log(`  ✓ Generated 301 static redirect fallbacks for ${Object.keys(ARTICLE_REDIRECTS).length} article redirects`);
+
+  // 3e. Generate static HTML fallbacks for /calculator/* -> /calculators/*
+  const calculatorNames = ["", "sip", "step-up-sip", "lumpsum", "swp", "goal-planner", "tax-estimator", "direct-vs-regular", "cost-of-delay", "sip-vs-lumpsum"];
+  for (const calcName of calculatorNames) {
+    const targetPath = calcName ? `/calculators/${calcName}` : "/calculators";
+    const redirectHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=${targetPath}">
+  <link rel="canonical" href="${CANONICAL_ORIGIN}${targetPath}">
+  <title>Redirecting to ${targetPath} | YieldNest</title>
+</head>
+<body>
+  <p>Redirecting to <a href="${targetPath}">${CANONICAL_ORIGIN}${targetPath}</a>...</p>
+  <script>window.location.replace("${targetPath}");</script>
+</body>
+</html>`;
+    if (calcName) {
+      const calcDir = path.join(distDir, "calculator", calcName);
+      fs.mkdirSync(calcDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, "calculator", `${calcName}.html`), redirectHtml, "utf-8");
+      fs.writeFileSync(path.join(calcDir, "index.html"), redirectHtml, "utf-8");
+    } else {
+      const calcDir = path.join(distDir, "calculator");
+      fs.mkdirSync(calcDir, { recursive: true });
+      fs.writeFileSync(path.join(distDir, "calculator.html"), redirectHtml, "utf-8");
+      fs.writeFileSync(path.join(calcDir, "index.html"), redirectHtml, "utf-8");
     }
   }
+  console.log(`  ✓ Generated 301 static redirect fallbacks for /calculator/* -> /calculators/*`);
 
   // 4. Generate and sync sitemap.xml to dist and public
   const sitemapXml = buildSitemapXmlString(articles);

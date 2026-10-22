@@ -31,10 +31,10 @@ interface CalculatorSuitePageProps {
 
 // Canonical URL mapping for each individual calculator
 export const CALCULATOR_URL_MAP: Record<CalculatorTabType, string> = {
-  "direct-vs-regular": "/calculator/direct-vs-regular",
-  "step-up": "/calculator/step-up-sip",
-  "cost-of-delay": "/calculator/cost-of-delay",
-  "sip-vs-lumpsum": "/calculator/sip-vs-lumpsum",
+  "direct-vs-regular": "/calculators/direct-vs-regular",
+  "step-up": "/calculators/step-up-sip",
+  "cost-of-delay": "/calculators/cost-of-delay",
+  "sip-vs-lumpsum": "/calculators/sip-vs-lumpsum",
 };
 
 // Helper: Format INR currency

@@ -224,7 +224,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
     primaryCalculator: {
       id: "cost-of-delay",
       name: "Cost of Delay Calculator",
-      url: "/calculator/cost-of-delay",
+      url: "/calculators/cost-of-delay",
       badge: "Risk Mitigation",
       description:
         "Understand the hidden risk of market timing hesitation and how delaying capital deployment permanently erodes compound terminal wealth.",
@@ -459,7 +459,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
     primaryCalculator: {
       id: "direct-vs-regular",
       name: "Direct vs Regular TER Drag Calculator",
-      url: "/calculator/direct-vs-regular",
+      url: "/calculators/direct-vs-regular",
       badge: "Fee Analyzer",
       description:
         "Calculate the exact rupee wealth lost to distributor trail commissions across 5, 10, 20, and 30-year SIP or lumpsum investment journeys.",
@@ -476,7 +476,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
       {
         id: "cost-of-delay",
         name: "Cost of Delay Calculator",
-        url: "/calculator/cost-of-delay",
+        url: "/calculators/cost-of-delay",
         badge: "Opportunity Cost",
         description:
           "Compare the financial drag of paying distributor fees versus delaying your initial investment start date.",
@@ -586,7 +586,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
       {
         id: "cost-of-delay",
         name: "Cost of Delay & Timing Calculator",
-        url: "/calculator/cost-of-delay",
+        url: "/calculators/cost-of-delay",
         badge: "Cash Flow Timing",
         description:
           "Assess how early vs delayed withdrawals affect your remaining portfolio's longevity and compounding capacity.",
@@ -594,7 +594,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
       {
         id: "sip-vs-lumpsum",
         name: "SIP vs Lumpsum Comparison Calculator",
-        url: "/calculator/sip-vs-lumpsum",
+        url: "/calculators/sip-vs-lumpsum",
         badge: "Liquidity Strategy",
         description:
           "Compare the liquidity profiles and terminal outcomes of staggered monthly allocations versus upfront lump-sum capital commitments.",
@@ -704,7 +704,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
       {
         id: "sip-vs-lumpsum",
         name: "SIP vs Lumpsum Comparison Calculator",
-        url: "/calculator/sip-vs-lumpsum",
+        url: "/calculators/sip-vs-lumpsum",
         badge: "Strategy Showdown",
         description:
           "Compare the long-term wealth accumulation and risk profile of staggered SIP investments against upfront lump-sum deployment.",
@@ -804,7 +804,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
     primaryCalculator: {
       id: "sip-vs-lumpsum",
       name: "SIP vs Lumpsum Comparison Calculator",
-      url: "/calculator/sip-vs-lumpsum",
+      url: "/calculators/sip-vs-lumpsum",
       badge: "Allocation Showdown",
       description:
         "Directly compare the wealth creation outcomes, volatility profiles, and cash commitment schedules of SIP versus Lumpsum strategies.",
@@ -813,7 +813,7 @@ export const TOPIC_HUBS: TopicHubData[] = [
       {
         id: "direct-vs-regular",
         name: "Direct vs Regular TER Drag Calculator",
-        url: "/calculator/direct-vs-regular",
+        url: "/calculators/direct-vs-regular",
         badge: "Fee Showdown",
         description:
           "Model the comparative cost difference between DIY direct plan execution versus distributor-mediated regular plans.",
@@ -959,7 +959,7 @@ export function getRelatedItemsForArticle(
     calculator = {
       id: "direct-vs-regular",
       name: "Direct vs Regular TER Drag Calculator",
-      url: "/calculator/direct-vs-regular",
+      url: "/calculators/direct-vs-regular",
       badge: "Fee Analyzer",
       description:
         "Model the compounding wealth loss caused by distributor trail commissions over 10 to 25 year holding horizons.",
@@ -977,7 +977,7 @@ export function getRelatedItemsForArticle(
     calculator = {
       id: "sip-vs-lumpsum",
       name: "SIP vs Lumpsum Comparison Calculator",
-      url: "/calculator/sip-vs-lumpsum",
+      url: "/calculators/sip-vs-lumpsum",
       badge: "Allocation Strategy",
       description:
         "Compare the volatility resilience and terminal corpus of systematic dollar-cost averaging versus upfront lumpsum deployment.",

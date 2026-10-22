@@ -172,11 +172,13 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
   // 3. Dynamic Keywords Extraction (from article tags, category, primary/secondary keywords)
   const keywords = extractArticleKeywords(post, customKeywords, calculatorMeta);
 
-  // 4. Image check (do not create or force images for articles)
-  const socialImage = post?.coverImage ? resolveSocialImageUrl(post.coverImage, canonicalOrigin) : null;
+  // 4. Image check: prioritize article coverImage, otherwise use official YieldNest OG image
+  const defaultOgImage = `${canonicalOrigin}/og-image.png`;
+  const resolvedCover = post?.coverImage ? resolveSocialImageUrl(post.coverImage, canonicalOrigin) : null;
+  const socialImage: string = resolvedCover || defaultOgImage;
 
-  // 5. Author & Attribution (Strictly institutional desk, no individual names)
-  const authorName = "YieldNest Research Desk";
+  // 5. Author & Attribution (Institutional desk compliant with SEBI & non-advisory norms)
+  const authorName = settings.authorName || "YieldNest Editorial Team";
 
   useEffect(() => {
     // A. Update Document Title
@@ -206,11 +208,11 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
     removeMetaTag("name", "keywords");
     const gscCode = (settings.googleSearchConsoleVerification && settings.googleSearchConsoleVerification.trim())
       ? settings.googleSearchConsoleVerification.trim()
-      : "gsc-verification-code-yieldnest-2026";
+      : (typeof import.meta !== "undefined" && (import.meta.env?.VITE_GOOGLE_SITE_VERIFICATION || import.meta.env?.GOOGLE_SITE_VERIFICATION)) || "gsc-verification-code-yieldnest-2026";
     setMetaTag("name", "google-site-verification", gscCode);
     removeMetaTag("name", "indexnow-key");
     setMetaTag("name", "author", authorName);
-    setMetaTag("name", "robots", "index, follow, max-snippet:-1");
+    setMetaTag("name", "robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
 
     // C. OpenGraph Protocol Tags
     setMetaTag("property", "og:site_name", settings.siteName);
@@ -220,20 +222,12 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
     setMetaTag("property", "og:description", description);
     setMetaTag("property", "og:url", fullUrl);
 
-    // D. OpenGraph Image Tags: Only include if explicitly provided, do not fabricate
-    if (socialImage) {
-      setMetaTag("property", "og:image", socialImage);
-      setMetaTag("property", "og:image:secure_url", socialImage.replace(/^http:\/\//i, "https://"));
-      setMetaTag("property", "og:image:width", "1200");
-      setMetaTag("property", "og:image:height", "630");
-      setMetaTag("property", "og:image:alt", title);
-    } else {
-      removeMetaTag("property", "og:image");
-      removeMetaTag("property", "og:image:secure_url");
-      removeMetaTag("property", "og:image:width");
-      removeMetaTag("property", "og:image:height");
-      removeMetaTag("property", "og:image:alt");
-    }
+    // D. OpenGraph Image Tags
+    setMetaTag("property", "og:image", socialImage);
+    setMetaTag("property", "og:image:secure_url", socialImage.replace(/^http:\/\//i, "https://"));
+    setMetaTag("property", "og:image:width", "1200");
+    setMetaTag("property", "og:image:height", "630");
+    setMetaTag("property", "og:image:alt", title);
 
     // E. OpenGraph Article Extensions
     const existingArticleTags = document.querySelectorAll('meta[property="article:tag"]');
@@ -268,16 +262,10 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
       });
     }
 
-    // F. Twitter / X Cards (Use clean 'summary' card when no image, or 'summary_large_image' if image exists)
-    if (socialImage) {
-      setMetaTag("name", "twitter:card", "summary_large_image");
-      setMetaTag("name", "twitter:image", socialImage);
-      setMetaTag("name", "twitter:image:alt", title);
-    } else {
-      setMetaTag("name", "twitter:card", "summary");
-      removeMetaTag("name", "twitter:image");
-      removeMetaTag("name", "twitter:image:alt");
-    }
+    // F. Twitter / X Cards with Large Image
+    setMetaTag("name", "twitter:card", "summary_large_image");
+    setMetaTag("name", "twitter:image", socialImage);
+    setMetaTag("name", "twitter:image:alt", title);
     setMetaTag("name", "twitter:site", "@YieldNestOnline");
     setMetaTag("name", "twitter:title", title);
     setMetaTag("name", "twitter:description", description);
@@ -388,7 +376,7 @@ export function SEOHead({ post, settings, customTitle, customDescription, custom
         "timeRequired": `PT${readTime}M`,
         "author": {
           "@type": "Organization",
-          "name": "YieldNest Research Desk",
+          "name": authorName,
           "url": `${canonicalOrigin}/about`,
         },
         publisher: {
